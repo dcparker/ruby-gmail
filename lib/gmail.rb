@@ -73,6 +73,7 @@ class Gmail
     meta = class << self; self end
     if to.is_a?(MIME::Message)
       to.headers['from'] = meta.username
+      to.headers['date'] = Time.now.strftime("%a, %d %b %Y %H:%M:%S %z")
       body = to.to_s
       to = to.to
     end

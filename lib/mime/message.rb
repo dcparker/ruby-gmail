@@ -7,7 +7,7 @@ module MIME
   # from an email message.
   class Message < Entity
     def self.generate
-      Message.new('date' => Time.now.strftime("%a, %d %b %Y %H:%M:%S %z"), 'mime-version' => '1.0')
+      Message.new('content-type' => 'text/plain', 'mime-version' => '1.0')
     end
 
     def to(addressee=nil)
