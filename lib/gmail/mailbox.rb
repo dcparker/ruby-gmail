@@ -4,7 +4,7 @@ class Gmail
 
     def initialize(gmail, name)
       @gmail = gmail
-      @name = name.is_a?(Symbol) ? name.to_s.upcase : name
+      @name = name
     end
 
     def inspect
@@ -24,14 +24,13 @@ class Gmail
         :read => ['SEEN']
       }
       # puts "Gathering #{(aliases[key] || key).inspect} messages for mailbox '#{name}'..."
-      @gmail.in_mailbox(name) do
+      @gmail.in_mailbox(self) do
         @gmail.imap.uid_search(aliases[key] || key).collect { |uid| messages[uid] ||= Message.new(@gmail, self, uid) }
       end
     end
 
-    private
-      def messages
-        @messages ||= {}
-      end
+    def messages
+      @messages ||= {}
+    end
   end
 end

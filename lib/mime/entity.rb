@@ -1,3 +1,4 @@
+require 'ietf/rfc2045'
 String::ALPHANUMERIC_CHARACTERS = ('a'..'z').to_a + ('A'..'Z').to_a unless defined? String::ALPHANUMERIC_CHARACTERS
 def String.random(size)
   length = String::ALPHANUMERIC_CHARACTERS.length
@@ -32,7 +33,6 @@ module MIME
     def from_parsed(parsed)
       case parsed
       when Array
-        puts "Parsed: #{parsed[0].class.name}, #{parsed[1].class.name}"
         if parsed[0].is_a?(Hash) && (parsed[1].is_a?(Hash) || parsed[1].is_a?(String))
           @headers = parsed[0]
           @content = parsed[1].is_a?(Hash) ? parsed[1][:content].collect {|p| Entity.new.from_parsed(p)} : parsed[1]
@@ -41,15 +41,14 @@ module MIME
             @multipart_boundary = parsed[1][:boundary]
           end
         else
-          puts " -> fail"
+          raise "IETF PARSING FAIL!"
         end
         return self
       when Hash
-        puts "Parsed: #{parsed.keys.sort.inspect}"
         if parsed.has_key?(:type) && parsed.has_key?(:boundary) && parsed.has_key?(:content)
           @content = parsed[:content].is_a?(Array) ? parsed[:content].collect {|p| Entity.new.from_parsed(p)} : parsed[:content]
         else
-          puts " -> fail"
+          raise "IETF PARSING FAIL!"
         end
         return self
       end
@@ -153,7 +152,7 @@ module MIME
     # Converts this data structure into a string, but decoded if necessary
     def decoded_content
       return nil if @content.is_a?(Array)
-      case encoding
+      case encoding.downcase
       when 'quoted-printable'
         @content.unpack('M')[0]
       when 'base64'
@@ -166,7 +165,7 @@ module MIME
     # You can set new content, and it will be saved in encoded form.
     def content=(raw)
       @content = raw.is_a?(Array) ? raw :
-        case encoding
+        case encoding.downcase
         when 'quoted-printable'
           [raw].pack('M')
         when 'base64'

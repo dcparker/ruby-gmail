@@ -7,7 +7,7 @@ class Gmail
       @uid = uid
     end
     def inspect
-      "<#Message:#{object_id} mailbox=#{mailbox.name}#{' uid='+@uid if @uid}#{' message_id='+@message_id if @message_id}>"
+      "<#Message:#{object_id} mailbox=#{@mailbox.name}#{' uid='+@uid.to_s if @uid}#{' message_id='+@message_id.to_s if @message_id}>"
     end
 
     # Auto IMAP info
@@ -16,14 +16,14 @@ class Gmail
     end
     def message_id
       @message_id || begin
-        @gmail.in_mailbox(@mailbox.name) do
+        @gmail.in_mailbox(@mailbox) do
           @message_id = @gmail.imap.uid_fetch(@uid, ['ENVELOPE'])[0].attr['ENVELOPE'].message_id
         end
       end
       @message_id
     end
     def body
-      @body ||= @gmail.in_mailbox(@mailbox.name) do
+      @body ||= @gmail.in_mailbox(@mailbox) do
         @gmail.imap.uid_fetch(uid, "RFC822")[0].attr["RFC822"]
       end
     end
@@ -35,12 +35,12 @@ class Gmail
 
     # IMAP Operations
     def flag(flg)
-      @gmail.in_mailbox(@mailbox.name) do
+      @gmail.in_mailbox(@mailbox) do
         @gmail.imap.uid_store(uid, "+FLAGS", [flg])
       end
     end
     def unflag(flg)
-      @gmail.in_mailbox(@mailbox.name) do
+      @gmail.in_mailbox(@mailbox) do
         @gmail.imap.uid_store(uid, "-FLAGS", [flg])
       end
     end
@@ -63,8 +63,8 @@ class Gmail
       flag(:Deleted)
     end
     def label(name)
-      @gmail.in_mailbox(@mailbox.name) do |m|
-        m.gmail.imap.uid_copy(uid, name)
+      @gmail.in_mailbox(@mailbox) do
+        @gmail.imap.uid_copy(uid, name)
       end
     end
     # We're not sure of any 'labels' except the 'mailbox' we're in at the moment.

@@ -15,7 +15,7 @@ class Gmail
       end
       self
     end
-    meta.username = username
+    meta.username = username =~ /@/ ? username : username + '@gmail.com'
     meta.password = password
     @imap = Net::IMAP.new('imap.gmail.com',993,true)
     @connected = true if @imap.login(username, password)
@@ -40,14 +40,14 @@ class Gmail
     raise ArgumentError, "Must provide a code block" unless block_given?
     mailbox_stack << mailbox
     unless @selected == mailbox.name
-      @gmail.imap.select(mailbox.name)
+      @imap.select(mailbox.name)
       @selected = mailbox.name
     end
     value = block.arity == 1 ? block.call(mailbox) : block.call
     mailbox_stack.pop
     # Select previously selected mailbox if there is one
     if mailbox_stack.last
-      @gmail.imap.select(mailbox_stack.last.name)
+      @imap.select(mailbox_stack.last.name)
       @selected = mailbox.name
     end
     return value
@@ -60,7 +60,7 @@ class Gmail
     Net::SMTP.start('smtp.gmail.com', 587, 'localhost.localdomain', meta.username, meta.password, 'plain', true) do |smtp|
       puts "SMTP open."
       block.call(lambda {|to, body|
-        from = meta.username =~ /@/ ? meta.username : meta.username + '@gmail.com'
+        from = meta.username
         puts "Sending from #{from} to #{to}:\n#{body}"
         smtp.send_message(body, from, to)
       })
@@ -72,7 +72,7 @@ class Gmail
   def send_email(to, body=nil)
     meta = class << self; self end
     if to.is_a?(MIME::Message)
-      to.headers['from'] = meta.username =~ /@/ ? meta.username : meta.username + '@gmail.com'
+      to.headers['from'] = meta.username
       body = to.to_s
       to = to.to
     end

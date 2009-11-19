@@ -17,7 +17,9 @@ module IETF
     end
 
     def self.parse_rfc2045_content_from(raw, boundary)
-      raw.split(/#{CRLF.source}--#{boundary}(?:--)?(?:#{CRLF.source}|$)/).collect {|part|
+      parts = raw.split(/#{CRLF.source}--#{boundary}(?:--)?(?:#{CRLF.source}|$)/)
+      parts.reject! {|p| p.gsub(/^[ \r\n#{HTAB}]?$/,'') == ''} # Remove any parts that are blank
+      parts.collect {|part|
         IETF::RFC2045.parse_rfc2045_from(part)
       }
     end
