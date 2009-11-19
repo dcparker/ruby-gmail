@@ -17,6 +17,7 @@ A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails 
 
 == SYNOPSIS:
 
+  require 'gmail'
   gmail = Gmail.new(username, password)
   gmail.inbox.count # => {:read => 41, :unread => 2}
   unread = gmail.inbox.emails(:unread)
