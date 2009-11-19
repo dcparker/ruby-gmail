@@ -4,3 +4,8 @@
 
   * Birthday!
 
+=== 0.0.2 / 2009-11-18
+
+* 1 minor enhancement
+
+  * Made all of the examples in the README possible.
