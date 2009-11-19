@@ -49,7 +49,7 @@ A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails 
 
 == INSTALL:
 
-* [sudo] gem install ruby-gmail
+* [sudo] gem install ruby-gmail -s http://gemcutter.org
 
 == LICENSE:
 

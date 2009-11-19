@@ -3,11 +3,11 @@ History.txt
 lib/gmail/mailbox.rb
 lib/gmail/message.rb
 lib/gmail.rb
-ietf/rfc2045.rb
-ietf/rfc822.rb
-mime/entity.rb
-mime/message.rb
-smtp_tls.rb
+lib/ietf/rfc2045.rb
+lib/ietf/rfc822.rb
+lib/mime/entity.rb
+lib/mime/message.rb
+lib/smtp_tls.rb
 Manifest.txt
 Rakefile
 README.txt

@@ -3,7 +3,7 @@ require 'net/smtp'
 require 'smtp_tls'
 
 class Gmail
-  VERSION = '1.0.0'
+  VERSION = '0.0.1'
 
   attr_reader :imap
 
