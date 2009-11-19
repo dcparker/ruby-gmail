@@ -1,0 +1,13 @@
+.autotest
+History.txt
+lib/gmail/mailbox.rb
+lib/gmail/message.rb
+lib/gmail.rb
+ietf/rfc2045.rb
+ietf/rfc822.rb
+mime/entity.rb
+mime/message.rb
+smtp_tls.rb
+Manifest.txt
+Rakefile
+README.txt
