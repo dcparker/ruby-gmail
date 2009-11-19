@@ -53,6 +53,7 @@
     </div>
 
     <p>Examples:<code><pre>
+  require 'gmail'
   gmail = Gmail.new(username, password)
   gmail.inbox.count # => {:unread => 2, :read => 41, }
   unread = gmail.inbox.emails(:unread)
