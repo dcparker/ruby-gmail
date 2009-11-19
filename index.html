@@ -52,29 +52,31 @@
       A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails and labels. Send email with your Gmail account via SMTP. Includes full support for parsing and generating MIME messages.
     </div>
 
-    <p>  gmail = Gmail.new(username, password)
-  gmail.inbox.count # => {:unread => 2, :read => 41, }
-  unread = gmail.inbox.emails(:unread)
-  unread[0].archive!
-  unread[1].delete!
-  unread[2].move_to('FunStuff') # => Labels 'FunStuff' and removes from inbox
-  unread[3].message # => a MIME::Message, parsed from the email body
-  unread[3].mark(:read)
-  unread[3].message.attachments.length
-  unread[4].label('FunStuff') # => Just adds the label 'FunStuff'
-  unread[4].message.save_attachments_to('path/to/save/into')
-  unread[5].message.attachments[0].save_to_file('path/to/save/into')
-  unread[6].mark(:spam)
+    <p>Examples:
+      <code><pre>
+      gmail = Gmail.new(username, password)
+      gmail.inbox.count # => {:unread => 2, :read => 41, }
+      unread = gmail.inbox.emails(:unread)
+      unread[0].archive!
+      unread[1].delete!
+      unread[2].move_to('FunStuff') # => Labels 'FunStuff' and removes from inbox
+      unread[3].message # => a MIME::Message, parsed from the email body
+      unread[3].mark(:read)
+      unread[3].message.attachments.length
+      unread[4].label('FunStuff') # => Just adds the label 'FunStuff'
+      unread[4].message.save_attachments_to('path/to/save/into')
+      unread[5].message.attachments[0].save_to_file('path/to/save/into')
+      unread[6].mark(:spam)
   
-  new_email = MIME::Message.generate
-  new_email.to "email@example.com"
-  new_email.subject "Having fun in Puerto Rico!"
-  plain, html = new_email.generate_multipart('text/plain', 'text/html')
-  plain.content = "Text of plain message."
-  html.content = "<p>Text of <em>html</em> message.</p>"
-  new_email.attach_file('some_image.dmg')
-  gmail.send_email(new_email)
-</p><h2>Dependencies</h2>
+      new_email = MIME::Message.generate
+      new_email.to "email@example.com"
+      new_email.subject "Having fun in Puerto Rico!"
+      plain, html = new_email.generate_multipart('text/plain', 'text/html')
+      plain.content = "Text of plain message."
+      html.content = "<p>Text of <em>html</em> message.</p>"
+      new_email.attach_file('some_image.dmg')
+      gmail.send_email(new_email)</pre></code></p>
+<h2>Dependencies</h2>
 <p>shared-mime-info >= 0</p>
 <h2>Install</h2>
 <p>gem install ruby-gmail -s http://gemcutter.org</p>
