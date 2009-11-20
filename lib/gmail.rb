@@ -3,7 +3,7 @@ require 'net/smtp'
 require 'smtp_tls'
 
 class Gmail
-  VERSION = '0.0.2'
+  VERSION = '0.0.3'
 
   attr_reader :imap
 
@@ -67,6 +67,10 @@ class Gmail
       puts "SMTP closing."
     end
     puts "SMTP closed."
+  end
+  
+  def new_message
+    MIME::Message.generate
   end
   
   def send_email(to, body=nil)

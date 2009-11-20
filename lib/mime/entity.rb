@@ -152,7 +152,7 @@ module MIME
     # Converts this data structure into a string, but decoded if necessary
     def decoded_content
       return nil if @content.is_a?(Array)
-      case encoding.downcase
+      case encoding.to_s.downcase
       when 'quoted-printable'
         @content.unpack('M')[0]
       when 'base64'
@@ -165,7 +165,7 @@ module MIME
     # You can set new content, and it will be saved in encoded form.
     def content=(raw)
       @content = raw.is_a?(Array) ? raw :
-        case encoding.downcase
+        case encoding.to_s.downcase
         when 'quoted-printable'
           [raw].pack('M')
         when 'base64'

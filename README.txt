@@ -1,12 +1,14 @@
 = ruby-gmail
 
-* http://github.com/dcparker/ruby-gmail
+* Homepage: http://dcparker.github.com/ruby-gmail/
+* Code: http://github.com/dcparker/ruby-gmail
+
 
 == DESCRIPTION:
 
 A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails and labels. Send email with your Gmail account via SMTP. Includes full support for parsing and generating MIME messages.
 
-== FEATURES/PROBLEMS:
+== FEATURES:
 
 * Read emails via IMAP
 * Full MIME parsing ability, with understanding of attachments
@@ -14,6 +16,11 @@ A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails 
 * Label, archive, delete, mark as read/unread/spam
 * Send emails via SMTP
 * Full ability to generate MIME messages including inline images and attachments
+
+== PROBLEMS:
+
+* May not correctly read malformed MIME messages. This could possibly be corrected by having IMAP parse the MIME structure.
+* Cannot grab the plain or html message without also grabbing attachments. It might be nice to lazy-[down]load attachments.
 
 == SYNOPSIS:
 

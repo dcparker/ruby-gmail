@@ -9,3 +9,10 @@
 * 1 minor enhancement
 
   * Made all of the examples in the README possible.
+
+=== 0.0.3 / 2009-11-19
+
+* 1 minor enhancement
+
+  * Fixed MIME::Message#content= for messages without an encoding
+  * Added Gmail#new_message
