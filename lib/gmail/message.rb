@@ -64,7 +64,22 @@ class Gmail
     end
     def label(name)
       @gmail.in_mailbox(@mailbox) do
-        @gmail.imap.uid_copy(uid, name)
+        begin
+          @gmail.imap.uid_copy(uid, name)
+        rescue Net::IMAP::NoResponseError
+          raise Gmail::NoLabel, "No label `#{name}' exists!"
+        end
+      end
+    end
+    def label!(name)
+      @gmail.in_mailbox(@mailbox) do
+        begin
+          @gmail.imap.uid_copy(uid, name)
+        rescue Net::IMAP::NoResponseError
+          # need to create the label first
+          @gmail.create_label(name)
+          retry
+        end
       end
     end
     # We're not sure of any 'labels' except the 'mailbox' we're in at the moment.

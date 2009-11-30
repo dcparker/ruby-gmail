@@ -5,6 +5,8 @@ require 'smtp_tls'
 class Gmail
   VERSION = '0.0.3'
 
+  class NoLabel << RuntimeError; end
+
   attr_reader :imap
 
   def initialize(username, password)
@@ -36,6 +38,10 @@ class Gmail
     @connected = false if @imap.logout
   end
 
+  def create_label(name)
+    @imap.create(name)
+  end
+
   def in_mailbox(mailbox, &block)
     raise ArgumentError, "Must provide a code block" unless block_given?
     mailbox_stack << mailbox
@@ -52,6 +58,7 @@ class Gmail
     end
     return value
   end
+  alias :in_label :in_mailbox
 
   def open_smtp(&block)
     raise ArgumentError, "This method is to be used with a block." unless block_given?

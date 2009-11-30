@@ -3,7 +3,6 @@
 * Homepage: http://dcparker.github.com/ruby-gmail/
 * Code: http://github.com/dcparker/ruby-gmail
 
-
 == DESCRIPTION:
 
 A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails and labels. Send email with your Gmail account via SMTP. Includes full support for parsing and generating MIME messages.
