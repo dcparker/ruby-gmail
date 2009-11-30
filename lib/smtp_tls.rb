@@ -15,13 +15,13 @@ Net::SMTP.class_eval do
     start_method = use_tls ? :do_tls_start : :do_start
     if block_given?
       begin
-        send start_method, helo, user, secret, authtype
+        send(start_method, helo, user, secret, authtype)
         return yield(self)
       ensure
         do_finish
       end
     else
-      send start_method helo, user, secret, authtype
+      send(start_method, helo, user, secret, authtype)
       return self
     end
   end
@@ -31,9 +31,9 @@ Net::SMTP.class_eval do
   def do_tls_start(helodomain, user, secret, authtype)
     raise IOError, 'SMTP session already started' if @started
     if RUBY_VERSION == '1.8.6'
-      check_auth_args user, secret, authtype if user or secret
+      check_auth_args(user, secret, authtype) if user or secret
     else
-      check_auth_args user, secret if user or secret
+      check_auth_args(user, secret) if user or secret
     end
 
     sock = timeout(@open_timeout) { TCPSocket.open(@address, @port) }
