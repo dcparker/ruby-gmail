@@ -3,7 +3,7 @@ require 'net/smtp'
 require 'smtp_tls'
 
 class Gmail
-  VERSION = '0.0.3'
+  VERSION = '0.0.4'
 
   class NoLabel << RuntimeError; end
 
