@@ -1,14 +1,20 @@
 === 0.0.4 / 2009-11-30
 
-* 1 minor enhancement
+* 4 minor enhancement
 
-  * Added label creation
+  * Added label creation (thanks to Justin Perkins / http://github.com/justinperkins)
+  * Made the gem login automatically when first needed
+  * Added an optional block on the Gmail.new object that will login and logout for you.
+  * Added several search options (thanks to Mikkel Malmberg / http://github.com/mikker)
 
 === 0.0.3 / 2009-11-19
 
-* 1 minor enhancement
+* 1 bugfix
 
   * Fixed MIME::Message#content= for messages without an encoding
+
+* 1 minor enhancement
+
   * Added Gmail#new_message
 
 === 0.0.2 / 2009-11-18

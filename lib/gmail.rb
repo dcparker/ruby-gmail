@@ -7,10 +7,9 @@ class Gmail
 
   class NoLabel < RuntimeError; end
 
-  attr_reader :imap
-
   def initialize(username, password)
     # This is to hide the username and password, not like it REALLY needs hiding, but ... you know.
+    # Could be helpful when demoing the gem in irb, these bits won't show up that way.
     meta = class << self
       class << self
         attr_accessor :username, :password
@@ -20,8 +19,11 @@ class Gmail
     meta.username = username =~ /@/ ? username : username + '@gmail.com'
     meta.password = password
     @imap = Net::IMAP.new('imap.gmail.com',993,true)
-    @connected = true if @imap.login(username, password)
-    at_exit { logout if @connected }
+    if block_given?
+      @connected = true if @imap.login(username, password)
+      yield self
+      logout
+    end
   end
 
   # Accessors for IMAP things
@@ -33,27 +35,36 @@ class Gmail
   def inbox
     mailbox('inbox')
   end
+  # Accessor for @imap, but ensures that it's logged in first.
+  def imap
+    if !@connected
+      meta = class << self; self end
+      @connected = true if @imap.login(meta.username, meta.password)
+      at_exit { logout if @connected } # Set up auto-logout for later.
+    end
+    @imap
+  end
   # Log out of gmail
   def logout
     @connected = false if @imap.logout
   end
 
   def create_label(name)
-    @imap.create(name)
+    imap.create(name)
   end
 
   def in_mailbox(mailbox, &block)
     raise ArgumentError, "Must provide a code block" unless block_given?
     mailbox_stack << mailbox
     unless @selected == mailbox.name
-      @imap.select(mailbox.name)
+      imap.select(mailbox.name)
       @selected = mailbox.name
     end
     value = block.arity == 1 ? block.call(mailbox) : block.call
     mailbox_stack.pop
     # Select previously selected mailbox if there is one
     if mailbox_stack.last
-      @imap.select(mailbox_stack.last.name)
+      imap.select(mailbox_stack.last.name)
       @selected = mailbox.name
     end
     return value

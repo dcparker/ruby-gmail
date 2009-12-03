@@ -2,6 +2,16 @@
 
 * Homepage: http://dcparker.github.com/ruby-gmail/
 * Code: http://github.com/dcparker/ruby-gmail
+* Gem: http://gemcutter.org/gems/ruby-gmail
+
+== Author(s):
+
+Daniel Parker of BehindLogic.com
+Extra thanks for specific feature contributions from:
+
+  * Justin Perkins (http://github.com/justinperkins)
+  * Mikkel Malmberg (http://github.com/mikker)
+
 
 == DESCRIPTION:
 
@@ -24,19 +34,29 @@ A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails 
 == SYNOPSIS:
 
   require 'gmail'
-  gmail = Gmail.new(username, password)
-  gmail.inbox.count # => {:read => 41, :unread => 2}
-  unread = gmail.inbox.emails(:unread)
-  unread[0].archive!
-  unread[1].delete!
-  unread[2].move_to('FunStuff') # => Labels 'FunStuff' and removes from inbox
-  unread[3].message # => a MIME::Message, parsed from the email body
-  unread[3].mark(:read)
-  unread[3].message.attachments.length
-  unread[4].label('FunStuff') # => Just adds the label 'FunStuff'
-  unread[4].message.save_attachments_to('path/to/save/into')
-  unread[5].message.attachments[0].save_to_file('path/to/save/into')
-  unread[6].mark(:spam)
+  gmail = Gmail.new(username, password) do |g|
+    gmail.inbox.count # takes the same arguments as gmail.inbox.emails
+    unread = gmail.inbox.emails(:unread)
+    unread[0].archive!
+    unread[1].delete!
+    unread[2].move_to('FunStuff') # => Labels 'FunStuff' and removes from inbox
+    unread[3].message # => a MIME::Message, parsed from the email body
+    unread[3].mark(:read)
+    unread[3].message.attachments.length
+    unread[4].label('FunStuff') # => Just adds the label 'FunStuff'
+    unread[4].message.save_attachments_to('path/to/save/into')
+    unread[5].message.attachments[0].save_to_file('path/to/save/into')
+    unread[6].mark(:spam)
+  end
+
+  # Optionally use a block like above to have the gem automatically login and logout,
+  # or just use it without a block after creating the object like below, and it will
+  # automatically logout at_exit. The block method is recommended, to limit your signed-in session.
+
+  older = gmail.inbox.emails(:after => '2009-03-04', :before => '2009-03-15')
+  todays_date = Time.parse(Time.now.strftime('%Y-%m-%d'))
+  yesterday = gmail.inbox.emails(:after => (todays_date - 24*60*60), :before => todays_date)
+  todays_unread = gmail.inbox.emails(:unread, :after => todays_date)
   
   new_email = MIME::Message.generate
   new_email.to "email@example.com"
