@@ -5,7 +5,7 @@ require 'smtp_tls'
 class Gmail
   VERSION = '0.0.4'
 
-  class NoLabel << RuntimeError; end
+  class NoLabel < RuntimeError; end
 
   attr_reader :imap
 
