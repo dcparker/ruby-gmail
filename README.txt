@@ -6,7 +6,8 @@
 
 == Author(s):
 
-Daniel Parker of BehindLogic.com
+* Daniel Parker of BehindLogic.com
+
 Extra thanks for specific feature contributions from:
 
   * Justin Perkins (http://github.com/justinperkins)
