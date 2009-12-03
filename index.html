@@ -54,19 +54,29 @@
 
     <p>Examples:<code><pre>
   require 'gmail'
-  gmail = Gmail.new(username, password)
-  gmail.inbox.count # => {:unread => 2, :read => 41, }
-  unread = gmail.inbox.emails(:unread)
-  unread[0].archive!
-  unread[1].delete!
-  unread[2].move_to('FunStuff') # => Labels 'FunStuff' and removes from inbox
-  unread[3].message # => a MIME::Message, parsed from the email body
-  unread[3].mark(:read)
-  unread[3].message.attachments.length
-  unread[4].label('FunStuff') # => Just adds the label 'FunStuff'
-  unread[4].message.save_attachments_to('path/to/save/into')
-  unread[5].message.attachments[0].save_to_file('path/to/save/into')
-  unread[6].mark(:spam)
+  gmail = Gmail.new(username, password) do |g|
+    gmail.inbox.count # takes the same arguments as gmail.inbox.emails
+    unread = gmail.inbox.emails(:unread)
+    unread[0].archive!
+    unread[1].delete!
+    unread[2].move_to('FunStuff') # =&gt; Labels 'FunStuff' and removes from inbox
+    unread[3].message # =&gt; a MIME::Message, parsed from the email body
+    unread[3].mark(:read)
+    unread[3].message.attachments.length
+    unread[4].label('FunStuff') # =&gt; Just adds the label 'FunStuff'
+    unread[4].message.save_attachments_to('path/to/save/into')
+    unread[5].message.attachments[0].save_to_file('path/to/save/into')
+    unread[6].mark(:spam)
+  end
+
+  # Optionally use a block like above to have the gem automatically login and logout,
+  # or just use it without a block after creating the object like below, and it will
+  # automatically logout at_exit. The block method is recommended, to limit your signed-in session.
+
+  older = gmail.inbox.emails(:after =&gt; '2009-03-04', :before =&gt; '2009-03-15')
+  todays_date = Time.parse(Time.now.strftime('%Y-%m-%d'))
+  yesterday = gmail.inbox.emails(:after =&gt; (todays_date - 24*60*60), :before =&gt; todays_date)
+  todays_unread = gmail.inbox.emails(:unread, :after =&gt; todays_date)
 
   new_email = MIME::Message.generate
   new_email.to "email@example.com"
