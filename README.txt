@@ -10,8 +10,8 @@
 
 Extra thanks for specific feature contributions from:
 
-  * Justin Perkins (http://github.com/justinperkins/)
-  * Mikkel Malmberg (http://github.com/mikker/)
+  * Justin Perkins - http://github.com/justinperkins
+  * Mikkel Malmberg - http://github.com/mikker
 
 
 == DESCRIPTION:
