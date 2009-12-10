@@ -1,8 +1,8 @@
 # ruby-gmail
 
-* Homepage: http://dcparker.github.com/ruby-gmail/
-* Code: http://github.com/dcparker/ruby-gmail
-* Gem: http://gemcutter.org/gems/ruby-gmail
+* Homepage: [http://dcparker.github.com/ruby-gmail/](http://dcparker.github.com/ruby-gmail/)
+* Code: [http://github.com/dcparker/ruby-gmail](http://github.com/dcparker/ruby-gmail)
+* Gem: [http://gemcutter.org/gems/ruby-gmail](http://gemcutter.org/gems/ruby-gmail)
 
 ## Author(s)
 
@@ -10,8 +10,8 @@
 
 Extra thanks for specific feature contributions from:
 
-  * Justin Perkins - http://github.com/justinperkins
-  * Mikkel Malmberg - http://github.com/mikker
+  * [Justin Perkins](http://github.com/justinperkins)
+  * [Mikkel Malmberg](http://github.com/mikker)
 
 
 ## Description
@@ -74,11 +74,11 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
 * ruby
 * net/smtp
 * net/imap
-* gem shared-mime-info
+* shared-mime-info rubygem
 
 ## Install
 
-* [sudo] gem install ruby-gmail -s http://gemcutter.org
+    sudo gem install ruby-gmail -s http://gemcutter.org
 
 ## License
 
