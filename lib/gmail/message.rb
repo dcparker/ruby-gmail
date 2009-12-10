@@ -6,6 +6,7 @@ class Gmail
       @mailbox = mailbox
       @uid = uid
     end
+
     def inspect
       "<#Message:#{object_id} mailbox=#{@mailbox.name}#{' uid='+@uid.to_s if @uid}#{' message_id='+@message_id.to_s if @message_id}>"
     end
@@ -14,6 +15,7 @@ class Gmail
     def uid
       @uid ||= @gmail.imap.uid_search(['HEADER', 'Message-ID', message_id])[0]
     end
+
     def message_id
       @message_id || begin
         @gmail.in_mailbox(@mailbox) do
@@ -22,6 +24,7 @@ class Gmail
       end
       @message_id
     end
+
     def body
       @body ||= @gmail.in_mailbox(@mailbox) do
         @gmail.imap.uid_fetch(uid, "RFC822")[0].attr["RFC822"]
@@ -39,6 +42,7 @@ class Gmail
         @gmail.imap.uid_store(uid, "+FLAGS", [flg])
       end
     end
+
     def unflag(flg)
       @gmail.in_mailbox(@mailbox) do
         @gmail.imap.uid_store(uid, "-FLAGS", [flg])
@@ -58,10 +62,12 @@ class Gmail
         move_to('[Gmail]/Spam')
       end
     end
+
     def delete!
       @mailbox.messages.delete(uid)
       flag(:Deleted)
     end
+
     def label(name)
       @gmail.in_mailbox(@mailbox) do
         begin
@@ -83,13 +89,16 @@ class Gmail
         end
       end
     end
+
     # We're not sure of any 'labels' except the 'mailbox' we're in at the moment.
     # Research whether we can find flags that tell which other labels this email is a part of.
     # def remove_label(name)
     # end
+
     def move_to(name)
       label(name) && delete!
     end
+
     def archive!
       move_to('[Gmail]/All Mail')
     end
