@@ -10,4 +10,4 @@ lib/mime/message.rb
 lib/smtp_tls.rb
 Manifest.txt
 Rakefile
-README.txt
+README.markdown
