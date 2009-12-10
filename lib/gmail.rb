@@ -20,7 +20,7 @@ class Gmail
     meta.password = password
     @imap = Net::IMAP.new('imap.gmail.com',993,true)
     if block_given?
-      @connected = true if @imap.login(username, password)
+      @imap.login(username, password)
       yield self
       logout
     end
@@ -37,16 +37,16 @@ class Gmail
   end
   # Accessor for @imap, but ensures that it's logged in first.
   def imap
-    if !@connected
+    if @imap.disconnected?
       meta = class << self; self end
-      @connected = true if @imap.login(meta.username, meta.password)
-      at_exit { logout if @connected } # Set up auto-logout for later.
+      @imap.login(meta.username, meta.password)
+      at_exit { logout } # Set up auto-logout for later.
     end
     @imap
   end
   # Log out of gmail
   def logout
-    @connected = false if @imap.logout
+    @imap.logout unless @imap.disconnected?
   end
 
   def create_label(name)

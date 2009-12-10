@@ -71,6 +71,7 @@ class Gmail
         end
       end
     end
+
     def label!(name)
       @gmail.in_mailbox(@mailbox) do
         begin
