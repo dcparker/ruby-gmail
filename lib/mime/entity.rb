@@ -89,11 +89,12 @@ module MIME
       end
     end
     def attachment?
-      headers['content-disposition'] =~ /^attachment(?=;|$)/
+      headers['content-disposition'] =~ /^attachment(?=;|$)/ || headers['content-disposition'] =~ /^form-data;.* filename=[\"\']?[^\"\']+[\"\']?/
     end
-    def attachment_filename
+    alias :file? :attachment?
+    def part_filename
       # Content-Disposition: attachment; filename="summary.txt"
-      if headers['content-disposition'] =~ /^attachment; filename=[\"\']?([^\"\']+)/
+      if headers['content-disposition'] =~ /; filename=[\"\']?([^\"\']+)/
         $1
       end
     end
@@ -120,8 +121,8 @@ module MIME
 
     def save_to_file(path=nil)
       filename = path if path && !File.exists?(path) # If path doesn't exist, assume it's a filename
-      filename ||= path + '/' + attachment_filename if path && attachment? # If path does exist, and we're saving an attachment, use the attachment filename
-      filename ||= (attachment? ? attachment_filename : path) # If there is no path and we're saving an attachment, use the attachment filename; otherwise use path (whether it is present or not)
+      filename ||= path + '/' + part_filename if path && attachment? # If path does exist, and we're saving an attachment, use the attachment filename
+      filename ||= (attachment? ? part_filename : path) # If there is no path and we're saving an attachment, use the attachment filename; otherwise use path (whether it is present or not)
       filename ||= '.' # No path supplied, and not saving an attachment. We'll just save it in the current directory.
       if File.directory?(filename)
         i = 0

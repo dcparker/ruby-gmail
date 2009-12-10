@@ -28,6 +28,15 @@ module MIME
       find_parts(:content_disposition => 'attachment')
     end
 
+    def text
+      part = find_part(:content_type => 'text/plain')
+      part.content if part
+    end
+    def html
+      part = find_part(:content_type => 'text/html')
+      part.content if part
+    end
+
     def save_attachments_to(path=nil)
       attachments.each {|a| a.save_to_file(path) }
     end
