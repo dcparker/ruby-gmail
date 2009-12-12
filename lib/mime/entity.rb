@@ -12,7 +12,7 @@ module MIME
   class Entity
     def initialize(arg=nil)
       if arg.is_a?(String)
-        @raw = arg
+        @raw = arg.gsub(/\r\r+/, "\r").gsub(/([^\r])\n/, "\\1\r\n") # normalizes end-of-line characters
         from_parsed(IETF::RFC2045.parse_rfc2045_from(@raw))
       elsif arg.is_a?(Hash)
         @headers = arg
@@ -98,7 +98,7 @@ module MIME
         $1
       end
     end
-    attr_accessor :encoding
+    attr_writer :encoding
     def encoding
       @encoding ||= headers['content-transfer-encoding'] || nil
     end
@@ -158,6 +158,8 @@ module MIME
         @content.unpack('M')[0]
       when 'base64'
         @content.unpack('m')[0]
+      # when '7bit'
+      #   # should get this 7bit encoding done too...
       else
         @content
       end
