@@ -3,7 +3,7 @@ require 'net/smtp'
 require 'smtp_tls'
 
 class Gmail
-  VERSION = '0.0.4'
+  VERSION = '0.0.5'
 
   class NoLabel < RuntimeError; end
 
@@ -18,7 +18,7 @@ class Gmail
     end
     meta.username = username =~ /@/ ? username : username + '@gmail.com'
     meta.password = password
-    @imap = Net::IMAP.new('imap.gmail.com',993,true)
+    @imap = Net::IMAP.new('imap.gmail.com',993,true,nil,false)
     if block_given?
       @imap.login(username, password)
       yield self
