@@ -1,10 +1,23 @@
+=== 0.0.5 / 2009-12-16
+
+* 1 bugfix
+
+  * Fixed IMAP initializer to work with Ruby 1.9's net/imap
+
+* 4 minor enhancements
+
+  * Better logout depending on the IMAP connection itself
+  * Added MIME::Message#text and MIME::Message#html for easier access to an email body
+  * Improved the MIME-parsing API slightly
+  * Added some tests
+
 === 0.0.4 / 2009-11-30
 
 * 4 minor enhancement
 
   * Added label creation (thanks to Justin Perkins / http://github.com/justinperkins)
   * Made the gem login automatically when first needed
-  * Added an optional block on the Gmail.new object that will login and logout for you.
+  * Added an optional block on the Gmail.new object that will login and logout for you
   * Added several search options (thanks to Mikkel Malmberg / http://github.com/mikker)
 
 === 0.0.3 / 2009-11-19
@@ -21,7 +34,7 @@
 
 * 1 minor enhancement
 
-  * Made all of the examples in the README possible.
+  * Made all of the examples in the README possible
 
 === 0.0.1 / 2009-11-18
 
