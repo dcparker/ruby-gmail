@@ -1,3 +1,9 @@
+=== 0.0.6 / 2009-12-21
+
+* 1 bugfix
+
+  * Fixed multipart parsing for when the boundary is marked in quotes.
+
 === 0.0.5 / 2009-12-16
 
 * 1 bugfix
