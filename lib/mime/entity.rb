@@ -12,7 +12,7 @@ module MIME
   class Entity
     def initialize(arg=nil)
       if arg.is_a?(String)
-        @raw = arg.gsub(/\r\r+/, "\r").gsub(/([^\r])\n/, "\\1\r\n") # normalizes end-of-line characters
+        @raw = arg.gsub(/\r/,'').gsub(/\n/, "\r\n") # normalizes end-of-line characters
         from_parsed(IETF::RFC2045.parse_rfc2045_from(@raw))
       elsif arg.is_a?(Hash)
         @headers = arg
@@ -39,16 +39,17 @@ module MIME
           if parsed[1].is_a?(Hash)
             @multipart_type = parsed[1][:type]
             @multipart_boundary = parsed[1][:boundary]
+            raise "IETF PARSING FAIL! (empty boundary)" if @multipart_boundary == ''
           end
         else
-          raise "IETF PARSING FAIL!"
+          raise "IETF PARSING FAIL! ('A' structure)"
         end
         return self
       when Hash
         if parsed.has_key?(:type) && parsed.has_key?(:boundary) && parsed.has_key?(:content)
           @content = parsed[:content].is_a?(Array) ? parsed[:content].collect {|p| Entity.new.from_parsed(p)} : parsed[:content]
         else
-          raise "IETF PARSING FAIL!"
+          raise "IETF PARSING FAIL! ('H' structure)"
         end
         return self
       end

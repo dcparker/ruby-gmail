@@ -1,3 +1,9 @@
+=== 0.0.7 / 2009-12-23
+
+* 1 bugfix
+
+  * Improved multipart message parsing reliability
+
 === 0.0.6 / 2009-12-21
 
 * 1 bugfix

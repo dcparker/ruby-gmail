@@ -12,6 +12,7 @@ module IETF
       headers = {}
       # Parse out rfc822 (headers)
       head, remaining_raw = raw.split(/#{CRLF.source}#{CRLF.source}/,2)
+      puts "[RFC822] HEAD found:\n\t#{head.gsub(/\n/,"\n\t")}" if $DEBUG
       head.scan(FIELD) do |field_name, field_body|
         headers[field_name.downcase] = field_body
       end
