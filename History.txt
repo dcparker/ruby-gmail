@@ -1,3 +1,9 @@
+=== 0.0.8 / 2009/12-23
+
+* 1 bugfix
+
+  * Fixed attaching a file to an empty message
+
 === 0.0.7 / 2009-12-23
 
 * 1 bugfix
