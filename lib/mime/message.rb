@@ -12,7 +12,7 @@ module MIME
 
     def to(addressee=nil)
       headers['to'] = addressee if addressee
-      headers['to'].match(/([A-Z0-9._%+-]+@[A-Z0-9._%+-]+\.[A-Z]+)/i)[1]
+      headers['to'].match(/([A-Z0-9._%+-]+@[A-Z0-9._%+-]+\.[A-Z]+)/i)[1] if headers['to'].respond_to?(:match)
     end
 
     def subject(subj=nil)
@@ -20,8 +20,9 @@ module MIME
       headers['subject']
     end
 
-    def from
-      headers['from'].match(/([A-Z0-9._%+-]+@[A-Z0-9._%+-]+\.[A-Z]+)/i)[1]
+    def from(dummy=nil)
+      raise "Can't set FROM address in the message - will be set automatically when the message is sent." if dummy
+      headers['from'].match(/([A-Z0-9._%+-]+@[A-Z0-9._%+-]+\.[A-Z]+)/i)[1] if headers['from'].respond_to?(:match)
     end
 
     def attachments
@@ -47,6 +48,7 @@ module MIME
     end
 
     def attach_file(filename)
+      raise ArgumentError, "Currently the <filename> given must be a String (path to a file)." unless filename.is_a?(String)
       short_filename = filename.match(/([^\\\/]+)$/)[1]
 
       # Generate the attachment piece
@@ -62,12 +64,15 @@ module MIME
         # If already enclosed, all we have to do is add the attachment part
         (@content ||= []) << attachment
       else
+        # If there is no content, add a little message about the attachment(s).
+        set_content 'See attachment(s)' if @content.nil?
         # Generate the new top-level multipart, transferring what is here already into a child object
         new_content = Entity.new
         # Whatever it is, since it's not multipart/mixed, transfer it into a child object and add the attachment.
         transfer_to(new_content)
         headers.reject! {|k,v| k =~ /content/}
         headers['content-type'] = 'multipart/mixed'
+        headers.delete 'content-transfer-encoding' # because now it's useless.
         @content = [new_content, attachment]
       end
 

@@ -10,12 +10,14 @@ module MIME
     header_name.gsub(/^(\w)/) {|m| m.capitalize}.gsub(/-(\w)/) {|n| '-' + n[1].chr.capitalize}
   end
   class Entity
-    def initialize(arg=nil)
-      if arg.is_a?(String)
-        @raw = arg.gsub(/\r/,'').gsub(/\n/, "\r\n") # normalizes end-of-line characters
+    def initialize(one=nil,two=nil)
+      if one.is_a?(Hash) || two.is_a?(Hash)
+        @headers = one.is_a?(Hash) ? one : two
+        set_content one if one.is_a?(String)
+        @encoding = 'quoted-printable' unless encoding
+      elsif one.is_a?(String)
+        @raw = one.gsub(/\r/,'').gsub(/\n/, "\r\n") # normalizes end-of-line characters
         from_parsed(IETF::RFC2045.parse_rfc2045_from(@raw))
-      elsif arg.is_a?(Hash)
-        @headers = arg
       end
     end
 
@@ -72,12 +74,12 @@ module MIME
     # Macro Methods #
 
     def multipart?
-      !!(headers['content-type'] =~ /multipart\//)
+      !!(headers['content-type'] =~ /multipart\//) if headers['content-type']
     end
     def multipart_type
       if headers['content-type'] =~ /multipart\/(\w+)/
         $1
-      end
+      end if headers['content-type']
     end
     # Auto-generates a boundary if one doesn't yet exist.
     def multipart_boundary
@@ -90,24 +92,28 @@ module MIME
       end
     end
     def attachment?
-      headers['content-disposition'] =~ /^attachment(?=;|$)/ || headers['content-disposition'] =~ /^form-data;.* filename=[\"\']?[^\"\']+[\"\']?/
+      headers['content-disposition'] =~ /^attachment(?=;|$)/ || headers['content-disposition'] =~ /^form-data;.* filename=[\"\']?[^\"\']+[\"\']?/ if headers['content-disposition']
     end
     alias :file? :attachment?
     def part_filename
       # Content-Disposition: attachment; filename="summary.txt"
       if headers['content-disposition'] =~ /; filename=[\"\']?([^\"\']+)/
         $1
-      end
+      end if headers['content-disposition']
     end
-    attr_writer :encoding
+
     def encoding
       @encoding ||= headers['content-transfer-encoding'] || nil
     end
+    attr_writer :encoding
+    alias :set_encoding :encoding=
+
     def find_part(options)
       find_parts(options).first
     end
     def find_parts(options)
       parts = []
+      return nil unless (options[:content_type] && headers['content-type']) || (options[:content_disposition] && headers['content-disposition'])
         # Do I match your search?
         iam = true
         iam = false if options[:content_type] && headers['content-type'] !~ /^#{options[:content_type]}(?=;|$)/
@@ -167,7 +173,7 @@ module MIME
     end
 
     # You can set new content, and it will be saved in encoded form.
-    def content=(raw)
+    def set_content(raw)
       @content = raw.is_a?(Array) ? raw :
         case encoding.to_s.downcase
         when 'quoted-printable'
@@ -178,10 +184,11 @@ module MIME
           raw
         end
     end
+    alias :content= :set_content
 
     private
       def transfer_to(other)
-        other.instance_variable_set(:@content, @content.dup)
+        other.instance_variable_set(:@content, @content.dup) if @content
         other.headers.clear
         other.headers.merge!(Hash[*headers.dup.select {|k,v| k =~ /content/}.flatten])
       end
