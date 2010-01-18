@@ -53,6 +53,14 @@ class Gmail
     imap.create(name)
   end
 
+  # List the available labels
+  def labels
+    (@imap.list("", "%") + @imap.list("[Gmail]/", "%")).inject([]) do |lables,label|
+      label[:name].each_line { |l| labels << l }
+      labels
+    end
+  end
+
   def in_mailbox(mailbox, &block)
     raise ArgumentError, "Must provide a code block" unless block_given?
     mailbox_stack << mailbox
