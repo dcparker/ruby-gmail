@@ -6,6 +6,7 @@ lib/gmail.rb
 lib/ietf/rfc2045.rb
 lib/ietf/rfc822.rb
 lib/mime/entity.rb
+lib/mime/entity_tmail.rb
 lib/mime/message.rb
 lib/smtp_tls.rb
 Manifest.txt

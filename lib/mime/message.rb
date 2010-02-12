@@ -1,4 +1,4 @@
-require 'mime/entity'
+require 'mime/entity_tmail'
 require 'shared-mime-info'
 module MIME
   # A Message is really a MIME::Entity,

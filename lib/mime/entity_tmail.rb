@@ -1,3 +1,4 @@
+require 'tmail'
 require 'ietf/rfc2045'
 String::ALPHANUMERIC_CHARACTERS = ('a'..'z').to_a + ('A'..'Z').to_a unless defined? String::ALPHANUMERIC_CHARACTERS
 def String.random(size)
@@ -17,16 +18,16 @@ module MIME
         @encoding = 'quoted-printable' unless encoding
       elsif one.is_a?(String) # Intent is to parse a message body
         @raw = one.gsub(/\r/,'').gsub(/\n/, "\r\n") # normalizes end-of-line characters
-        from_parsed(IETF::RFC2045.parse_rfc2045_from(@raw))
+        @tmail = TMail::Mail.parse(@raw)
+        from_tmail(@tmail)
+      elsif one.is_a?(TMail::Mail)
+        @tmail = one
+        from_tmail(@tmail)
       end
     end
 
     def inspect
       "<#{self.class.name}##{object_id} Headers:{#{headers.collect {|k,v| "#{k}=#{v}"}.join(' ')}} content:#{multipart? ? 'multipart' : 'flat'}>"
-    end
-
-    def parsed
-      IETF::RFC2045.parse_rfc2045_from(@raw)
     end
 
     # This means we have a structure from IETF::RFC2045.
@@ -57,6 +58,15 @@ module MIME
       end
       raise ArgumentError, "Must pass in either: [an array with two elements: headers(hash) and content(string or array)] OR [a hash containing :type, :boundary, and :content(being the former or a string)]"
     end
+    def from_tmail(tmail)
+      raise ArgumentError, "Expecting a TMail::Mail object." unless tmail.is_a?(TMail::Mail)
+      @headers ||= Hash.new {|h,k| @tmail.header[k].to_s }
+      if multipart?
+        @content = @tmail.parts.collect { |tpart| Entity.new.from_tmail(tpart) }
+      else
+        set_content @tmail.body # TMail has already decoded it, but we need it still encoded
+      end
+    end
 
     ##############
     # ATTRIBUTES #
@@ -74,7 +84,8 @@ module MIME
     # Macro Methods #
 
     def multipart?
-      !!(headers['content-type'] =~ /multipart\//) if headers['content-type']
+      @tmail.multipart?
+      # !!(headers['content-type'] =~ /multipart\//) if headers['content-type']
     end
     def multipart_type
       if headers['content-type'] =~ /multipart\/(\w+)/
@@ -84,15 +95,16 @@ module MIME
     # Auto-generates a boundary if one doesn't yet exist.
     def multipart_boundary
       return nil unless multipart?
-      @multipart_boundary || begin
+      unless @multipart_boundary ||= (@tmail && @tmail.header['content-type'] ? @tmail.header['content-type'].params['boundary'] : nil)
         # Content-Type: multipart/mixed; boundary=000e0cd28d1282f4ba04788017e5
         @multipart_boundary = String.random(25)
         headers['content-type'] = "multipart/#{multipart_type}; boundary=#{@multipart_boundary}"
         @multipart_boundary
       end
+      @multipart_boundary
     end
     def attachment?
-      headers['content-disposition'] =~ /^attachment(?=;|$)/ || headers['content-disposition'] =~ /^form-data;.* filename=[\"\']?[^\"\']+[\"\']?/ if headers['content-disposition']
+      @tmail.disposition_is_attachment? || headers['content-disposition'] =~ /^form-data;.* filename=[\"\']?[^\"\']+[\"\']?/ if headers['content-disposition']
     end
     alias :file? :attachment?
     def part_filename
@@ -105,7 +117,13 @@ module MIME
     def encoding
       @encoding ||= headers['content-transfer-encoding'] || nil
     end
-    attr_writer :encoding
+    # Re-encodes content if necessary when a new encoding is set
+    def encoding=(new_encoding)
+      raw_content = decoded_content # nil if multipart
+      @encoding = new_encoding
+      set_content(raw_content) if raw_content # skips if multipart
+      @encoding
+    end
     alias :set_encoding :encoding=
 
     def find_part(options)
@@ -149,7 +167,7 @@ module MIME
 
     # Renders this data structure into a string, encoded
     def to_s
-      multipart_boundary # initialize the boundary if necessary
+      multipart_boundary # initialize the boundary if necessary, so it will be included in the headers
       headers.inject('') {|a,(k,v)| a << "#{MIME.capitalize_header(k)}: #{v}\r\n"} + "\r\n" + if content.is_a?(Array)
         "\r\n--#{multipart_boundary}\r\n" + content.collect {|part| part.to_s }.join("\r\n--#{multipart_boundary}\r\n") + "\r\n--#{multipart_boundary}--\r\n"
       else
