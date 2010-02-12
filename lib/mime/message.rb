@@ -1,5 +1,4 @@
 require 'mime/entity_tmail'
-require 'shared-mime-info'
 module MIME
   # A Message is really a MIME::Entity,
   # but should be used for the outermost Entity, because
@@ -52,6 +51,7 @@ module MIME
       short_filename = filename.match(/([^\\\/]+)$/)[1]
 
       # Generate the attachment piece
+      require 'shared-mime-info'
       attachment = Entity.new(
         'content-type' => MIME.check(filename).type + "; \r\n  name=\"#{short_filename}\"",
         'content-disposition' => "attachment; \r\n  filename=\"#{short_filename}\"",

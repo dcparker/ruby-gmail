@@ -74,7 +74,7 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
 * ruby
 * net/smtp
 * net/imap
-* shared-mime-info rubygem
+* shared-mime-info rubygem (for MIME-detection when attaching files)
 
 ## Install
 
