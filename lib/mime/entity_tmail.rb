@@ -127,9 +127,9 @@ module MIME
     alias :set_encoding :encoding=
 
     def find_part(options)
-      find_parts(options).first
+      find_parts(options,true).first
     end
-    def find_parts(options)
+    def find_parts(options,find_only_one=false)
       parts = []
       return nil unless (options[:content_type] && headers['content-type']) || (options[:content_disposition] && headers['content-disposition'])
         # Do I match your search?
@@ -137,9 +137,11 @@ module MIME
         iam = false if options[:content_type] && headers['content-type'] !~ /^#{options[:content_type]}(?=;|$)/
         iam = false if options[:content_disposition] && headers['content-disposition'] !~ /^#{options[:content_disposition]}(?=;|$)/
         parts << self if iam
+        return parts unless parts.empty?
         # Do any of my children match your search?
         content.each do |part|
-          parts.concat part.find_parts(options)
+          parts.concat part.find_parts(options,find_only_one)
+          return parts if !parts.empty? && find_only_one
         end if multipart?
       return parts
     end
