@@ -43,7 +43,7 @@ module MIME
 
     def generate_multipart(*content_types)
       headers['content-type'] = 'multipart/alternative'
-      @content = content_types.collect { |content_type| Entity.new('content-type' => content_type, 'content-transfer-encoding' => "quoted-printable") }
+      @content = content_types.collect { |content_type| Entity.new('content-type' => content_type, 'charset' => 'utf-8', 'content-transfer-encoding' => 'quoted-printable') }
     end
 
     def attach_file(filename)
@@ -61,10 +61,10 @@ module MIME
       
       # Enclose in a top-level multipart/mixed
       if multipart? && multipart_type == 'mixed'
-        # If already enclosed, all we have to do is add the attachment part
+        # If we're already dealing with a mixed multipart, all we have to do is add the attachment part
         (@content ||= []) << attachment
       else
-        # If there is no content, add a little message about the attachment(s).
+        # If there is no content yet, add a little message about the attachment(s).
         set_content 'See attachment(s)' if @content.nil?
         # Generate the new top-level multipart, transferring what is here already into a child object
         new_content = Entity.new
@@ -72,7 +72,7 @@ module MIME
         transfer_to(new_content)
         headers.reject! {|k,v| k =~ /content/}
         headers['content-type'] = 'multipart/mixed'
-        headers.delete 'content-transfer-encoding' # because now it's useless.
+        headers.delete 'content-transfer-encoding' # because we don't need a transfer-encoding on a multipart package.
         @content = [new_content, attachment]
       end
 
