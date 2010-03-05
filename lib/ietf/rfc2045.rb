@@ -4,7 +4,7 @@ module IETF
     def self.parse_rfc2045_from(raw)
       headers, raw = IETF::RFC822.parse_rfc822_from(raw)
 
-      if headers['content-type'] =~ /multipart\/(\w+); boundary=([\"\']?)(.*)\2?/
+      if headers['content-type'] =~ /multipart\/(\w+); boundary=([\"\'])(.*)\2/ || headers['content-type'] =~ /multipart\/(\w+); boundary(=)(.*)$/
         content = {}
         content[:type] = $1
         content[:boundary] = $3
