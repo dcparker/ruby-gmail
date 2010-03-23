@@ -80,7 +80,7 @@ class Gmail
       block.call(lambda {|to, body|
         from = meta.username
         puts "Sending from #{from} to #{to}:\n#{body}"
-        smtp.send_message(body, from, to)
+        smtp.send_message(body.to_s, from, to)
       })
       puts "SMTP closing."
     end

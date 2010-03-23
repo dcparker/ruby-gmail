@@ -84,8 +84,8 @@ module MIME
     # Macro Methods #
 
     def multipart?
-      @tmail.multipart?
-      # !!(headers['content-type'] =~ /multipart\//) if headers['content-type']
+      return @tmail.multipart? if @tmail
+      !!(headers['content-type'] =~ /multipart\//) if headers['content-type']
     end
     def multipart_type
       if headers['content-type'] =~ /multipart\/(\w+)/
