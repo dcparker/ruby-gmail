@@ -43,7 +43,7 @@ module MIME
 
     def generate_multipart(*content_types)
       headers['content-type'] = 'multipart/alternative'
-      @content = content_types.collect { |content_type| Entity.new('content-type' => content_type, 'charset' => 'utf-8', 'content-transfer-encoding' => 'quoted-printable') }
+      @content = content_types.collect { |content_type| Entity.new('content-type' => content_type) }
     end
 
     def attach_file(filename)
