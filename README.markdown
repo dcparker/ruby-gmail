@@ -12,7 +12,8 @@ Extra thanks for specific feature contributions from:
 
   * [Justin Perkins](http://github.com/justinperkins)
   * [Mikkel Malmberg](http://github.com/mikker)
-
+  * [Julien Blanchard](http://github.com/julienXX)
+  * [Federico Galassi](http://github.com/fgalassi)
 
 ## Description
 
@@ -78,7 +79,7 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
 
 ## Install
 
-    sudo gem install ruby-gmail -s http://gemcutter.org
+    gem install ruby-gmail
 
 ## License
 

@@ -1,12 +1,21 @@
 # -*- ruby -*-
 
 require 'rubygems'
-require 'hoe'
 
-Hoe.spec 'ruby-gmail' do
-  developer 'Daniel Parker', 'gems@behindlogic.com'
-  extra_deps << ['shared-mime-info', '>= 0']
-  self.readme_file = 'README.markdown'
-  self.url = "http://dcparker.github.com/ruby-gmail"
-  self.post_install_message = "\n\033[34mIf ruby-gmail saves you TWO hours of work, want to compensate me for, like, a half-hour?\nSupport me in making new and better gems:\033[0m \033[31;4mhttp://pledgie.com/campaigns/7087\033[0m\n\n"
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    gem.name = "ruby-gmail"
+    gem.summary = %Q{A Rubyesque interface to Gmail, with all the tools you'll need.}
+    gem.description = %Q{A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and send multipart emails; archive, mark as read/unread, delete emails; and manage labels.}
+    gem.email = "gems@behindlogic.com"
+    gem.homepage = "http://dcparker.github.com/ruby-gmail"
+    gem.authors = ["BehindLogic"]
+    gem.post_install_message = "\n\033[34mIf ruby-gmail saves you TWO hours of work, want to compensate me for, like, a half-hour?\nSupport me in making new and better gems:\033[0m \033[31;4mhttp://pledgie.com/campaigns/7087\033[0m\n\n"
+    gem.add_dependency('shared-mime-info', '>= 0')
+    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+  end
+  Jeweler::GemcutterTasks.new
+rescue LoadError
+  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
