@@ -19,8 +19,8 @@ class Gmail
     meta.username = username =~ /@/ ? username : username + '@gmail.com'
     meta.password = password
     @imap = Net::IMAP.new('imap.gmail.com',993,true,nil,false)
+    @imap.login(username, password)
     if block_given?
-      @imap.login(username, password)
       yield self
       logout
     end

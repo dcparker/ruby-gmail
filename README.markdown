@@ -1,3 +1,9 @@
+# This fork
+
+contains a fix to a bug in the initializer, which was discussed [here](http://github.com/dcparker/ruby-gmail/issues#issue/7/comment/141607)
+
+* * * *
+
 # ruby-gmail
 
 * Homepage: [http://dcparker.github.com/ruby-gmail/](http://dcparker.github.com/ruby-gmail/)
