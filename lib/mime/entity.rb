@@ -150,11 +150,16 @@ module MIME
     # Renders this data structure into a string, encoded
     def to_s
       multipart_boundary # initialize the boundary if necessary
-      {'charset' => 'utf-8', 'content-transfer-encoding' => @encoding}.merge(headers).inject('') {|a,(k,v)| a << "#{MIME.capitalize_header(k)}: #{v}\r\n"} + "\r\n" + if content.is_a?(Array)
-        "\r\n--#{multipart_boundary}\r\n" + content.collect {|part| part.to_s }.join("\r\n--#{multipart_boundary}\r\n") + "\r\n--#{multipart_boundary}--\r\n"
-      else
-        content.to_s
-      end
+
+      headers_string = {'charset' => 'utf-8', 'content-transfer-encoding' => @encoding} \
+        .merge(headers) \
+        .inject('') {|a,(k,v)| a << "#{MIME.capitalize_header(k)}: #{v}\r\n" }
+
+      content_string = content.is_a?(Array) ?
+        content.to_s :
+        content.collect {|part| "--#{multipart_boundary}\r\n#{part.to_s}\r\n" }.join + "--#{multipart_boundary}--\r\n"
+      
+      [headers_string, content_string].join("\r\n")
     end
 
     # Converts this data structure into a string, but decoded if necessary

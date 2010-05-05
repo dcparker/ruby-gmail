@@ -55,10 +55,8 @@ class Gmail
 
   # List the available labels
   def labels
-    (@imap.list("", "%") + @imap.list("[Gmail]/", "%")).inject([]) do |lables,label|
-      label[:name].each_line { |l| labels << l }
-      labels
-    end
+    (@imap.list("", "%") + @imap.list("[Gmail]/", "%")).inject([]) { |labels,label|
+      label[:name].each_line { |l| labels << l }; labels }
   end
 
   def in_mailbox(mailbox, &block)
