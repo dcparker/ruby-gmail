@@ -58,16 +58,18 @@ module MIME
       end
       raise ArgumentError, "Must pass in either: [an array with two elements: headers(hash) and content(string or array)] OR [a hash containing :type, :boundary, and :content(being the former or a string)]"
     end
+    
+    # Parse a tmail object into our Entity object
     def from_tmail(tmail)
       raise ArgumentError, "Expecting a TMail::Mail object." unless tmail.is_a?(TMail::Mail)
-      @headers ||= Hash.new {|h,k| @tmail.header[k].to_s }
+      @headers ||= Hash.new {|h,k| tmail.header[k].to_s }
       if multipart?
-        @content = @tmail.parts.collect { |tpart| Entity.new.from_tmail(tpart) }
+        @content = tmail.parts.collect { |tpart| Entity.new.from_tmail(tpart) }
       else
-        set_content @tmail.body # TMail has already decoded it, but we need it still encoded
+        set_content tmail.body # TMail has already decoded it, but we need it still encoded
       end
     end
-
+    
     ##############
     # ATTRIBUTES #
 
