@@ -1,9 +1,3 @@
-# This fork
-
-contains a fix to a bug in the initializer, which was discussed [here](http://github.com/dcparker/ruby-gmail/issues#issue/7/comment/141607)
-
-* * * *
-
 # ruby-gmail
 
 * Homepage: [http://dcparker.github.com/ruby-gmail/](http://dcparker.github.com/ruby-gmail/)
@@ -41,32 +35,82 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
 
 ## Example Code:
 
+### 1) Require gmail
+
     require 'gmail'
-    gmail = Gmail.new(username, password) do |g|
-      read_count = g.inbox.count(:read) # => .count take the same arguments as .emails
-      unread = g.inbox.emails(:unread)
-      unread[0].archive!
-      unread[1].delete!
-      unread[2].move_to('FunStuff') # => labels and removes from inbox
-      unread[3].message # => a MIME::Message, parsed from the email body
-      unread[3].mark(:read)
-      unread[3].message.attachments.length
-      unread[4].label('FunStuff') # => Just adds the label 'FunStuff'
-      unread[4].message.save_attachments_to('path/to/save/into')
-      unread[5].message.attachments[0].save_to_file('path/to/save/into')
-      unread[6].mark(:spam)
+    
+### 2) Start an authenticated gmail session
+
+    #    If you pass a block, the session will be passed into the block,
+    #    and the session will be logged out after the block is executed.
+    gmail = Gmail.new(username, password)
+    # ...do things...
+    gmail.logout
+
+    Gmail.new(username, password) do |gmail|
+      # ...do things...
     end
 
-    # Optionally use a block like above to have the gem automatically login and logout,
-    # or just use it without a block after creating the object like below, and it will
-    # automatically logout at_exit. The block method is recommended in order to limit
-    # your signed-in session.
+### 3) Count and gather emails!
+    
+    # Get counts for messages in the inbox
+    gmail.inbox.count
+    gmail.inbox.count(:unread)
+    gmail.inbox.count(:read)
 
-    older = gmail.inbox.emails(:after => '2009-03-04', :before => '2009-03-15')
-    todays_date = Time.parse(Time.now.strftime('%Y-%m-%d'))
-    yesterday = gmail.inbox.emails(:after => (todays_date - 24*60*60), :before => todays_date)
-    todays_unread = gmail.inbox.emails(:unread, :after => todays_date)
-  
+    # Count with some criteria
+    gmail.inbox.count(:after => Date.parse("2010-02-20"), :before => Date.parse("2010-03-20"))
+    gmail.inbox.count(:on => Date.parse("2010-04-15"))
+    gmail.inbox.count(:from => "myfriend@gmail.com")
+    gmail.inbox.count(:to => "directlytome@gmail.com")
+
+    # Combine flags and options
+    gmail.inbox.count(:unread, :from => "myboss@gmail.com")
+    
+    # Labels work the same way as inbox
+    gmail.mailbox('Urgent').count
+    
+    # Getting messages works the same way as counting: optional flag, and optional arguments
+    # Remember that every message in a conversation/thread will come as a separate message.
+    gmail.inbox.emails(:unread, :before => Date.parse("2010-04-20"), :from => "myboss@gmail.com")
+
+### 4) Work with emails!
+
+    # any news older than 4-20, mark as read and archive it...
+    gmail.inbox.emails(:before => Date.parse("2010-04-20"), :from => "news@nbcnews.com").each do |email|
+      email.mark(:read) # can also mark :unread or :spam
+      email.archive!
+    end
+
+    # delete emails from X...
+    gmail.inbox.emails(:from => "x-fiancé@gmail.com").each do |email|
+      email.delete!
+    end
+
+    # Save all attachments in the "Faxes" label to a folder
+    folder = "/where/ever"
+    gmail.mailbox("Faxes").emails.each do |email|
+      if !email.message.attachments.empty?
+        email.message.save_attachments_to(folder)
+      end
+    end
+
+    # Save just the first attachment from the newest unread email (assuming pdf)
+    # For #save_to_file:
+    #   + provide a path - save to attachment filename in path
+    #   + provide a filename - save to file specified
+    #   + provide no arguments - save to attachment filename in current directory
+    email = gmail.inbox.emails(:unread).first
+    email.attachments[0].save_to_file("/path/to/location")
+
+    # Add a label to a message
+    email.label("Faxes")
+
+    # Or "move" the message to a label
+    email.move_to("Faxes")
+
+### 5) Create new emails!
+
     new_email = MIME::Message.generate
     new_email.to "email@example.com"
     new_email.subject "Having fun in Puerto Rico!"
@@ -81,6 +125,7 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
 * ruby
 * net/smtp
 * net/imap
+* tmail
 * shared-mime-info rubygem (for MIME-detection when attaching files)
 
 ## Install

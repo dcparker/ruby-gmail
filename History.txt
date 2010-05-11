@@ -1,3 +1,10 @@
+=== 0.1.1 / 2010-05-11
+
+* 1 minor fix
+
+  * Added explicit tmail dependency in gemspec
+  * Added better README tutorial content
+
 === 0.0.9 / 2010-04-17
 
 * 1 bugfix
