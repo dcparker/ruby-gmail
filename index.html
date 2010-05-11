@@ -95,7 +95,7 @@ gmail.inbox.emails(:before => Date.parse("2010-04-20"), :from => "news@nbcnews.c
 end
 
 # delete emails from X...
-gmail.inbox.emails(:from => "x-fiancé").each do |email|
+gmail.inbox.emails(:from => "x-fiancé@gmail.com").each do |email|
   email.delete!
 end
 
