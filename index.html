@@ -52,46 +52,90 @@
       A Rubyesque interface to Gmail. Connect to Gmail via IMAP and manipulate emails and labels. Send email with your Gmail account via SMTP. Includes full support for parsing and generating MIME messages.
     </div>
 
-    <p>Examples:<code><pre>
-  require 'gmail'
-  gmail = Gmail.new(username, password) do |g|
-    gmail.inbox.count # takes the same arguments as gmail.inbox.emails
-    unread = gmail.inbox.emails(:unread)
-    unread[0].archive!
-    unread[1].delete!
-    unread[2].move_to('FunStuff') # =&gt; Labels 'FunStuff' and removes from inbox
-    unread[3].message # =&gt; a MIME::Message, parsed from the email body
-    unread[3].mark(:read)
-    unread[3].message.attachments.length
-    unread[4].label('FunStuff') # =&gt; Just adds the label 'FunStuff'
-    unread[4].message.save_attachments_to('path/to/save/into')
-    unread[5].message.attachments[0].save_to_file('path/to/save/into')
-    unread[6].mark(:spam)
+<h3>Example Code:</h3>
+
+<h4>1) Require gmail</h4>
+<code><pre>require 'gmail'</pre></code>
+<h4>2) Start an authenticated gmail session</h4>
+<code><pre>#    If you pass a block, the session will be passed into the block,
+#    and the session will be logged out after the block is executed.
+gmail = Gmail.new(username, password)
+# ...do things...
+gmail.logout
+
+Gmail.new(username, password) do |gmail|
+  # ...do things...
+end</pre></code>
+<h4>3) Count and gather emails!</h4>
+<code><pre># Get counts for messages in the inbox
+gmail.inbox.count
+gmail.inbox.count(:unread)
+gmail.inbox.count(:read)
+
+# Count with some criteria
+gmail.inbox.count(:after => Date.parse("2010-02-20"), :before => Date.parse("2010-03-20"))
+gmail.inbox.count(:on => Date.parse("2010-04-15"))
+gmail.inbox.count(:from => "myfriend@gmail.com")
+gmail.inbox.count(:to => "directlytome@gmail.com")
+
+# Combine flags and options
+gmail.inbox.count(:unread, :from => "myboss@gmail.com")
+
+# Labels work the same way as inbox
+gmail.mailbox('Urgent').count
+
+# Getting messages works the same way as counting: optional flag, and optional arguments
+# Remember that every message in a conversation/thread will come as a separate message.
+gmail.inbox.emails(:unread, :before => Date.parse("2010-04-20"), :from => "myboss@gmail.com")</pre></code>
+<h4>4) Work with emails!</h4>
+<code><pre># any news older than 4-20, mark as read and archive it...
+gmail.inbox.emails(:before => Date.parse("2010-04-20"), :from => "news@nbcnews.com").each do |email|
+  email.mark(:read) # can also mark :unread or :spam
+  email.archive!
+end
+
+# delete emails from X...
+gmail.inbox.emails(:from => "x-fiancé").each do |email|
+  email.delete!
+end
+
+# Save all attachments in the "Faxes" label to a folder
+folder = "/where/ever"
+gmail.mailbox("Faxes").emails.each do |email|
+  if !email.message.attachments.empty?
+    email.message.save_attachments_to(folder)
   end
+end
 
-  # Optionally use a block like above to have the gem automatically login and logout,
-  # or just use it without a block after creating the object like below, and it will
-  # automatically logout at_exit.
-  # The block method is recommended, to limit your signed-in session.
+# Save just the first attachment from the newest unread email (assuming pdf)
+# For #save_to_file:
+#   + provide a path - save to attachment filename in path
+#   + provide a filename - save to file specified
+#   + provide no arguments - save to attachment filename in current directory
+email = gmail.inbox.emails(:unread).first
+email.attachments[0].save_to_file("/path/to/location")
 
-  older = gmail.inbox.emails(:after =&gt; '2009-03-04', :before =&gt; '2009-03-15')
-  todays_date = Time.parse(Time.now.strftime('%Y-%m-%d'))
-  yesterday = gmail.inbox.emails(:after =&gt; (todays_date - 24*60*60),
-                                 :before =&gt; todays_date)
-  todays_unread = gmail.inbox.emails(:unread, :after =&gt; todays_date)
+# Add a label to a message
+email.label("Faxes")
 
-  new_email = MIME::Message.generate
-  new_email.to "email@example.com"
-  new_email.subject "Having fun in Puerto Rico!"
-  plain, html = new_email.generate_multipart('text/plain', 'text/html')
-  plain.content = "Text of plain message."
-  html.content = "&lt;p&gt;Text of &lt;em&gt;html&lt;/em&gt; message.&lt;/p&gt;"
-  new_email.attach_file('some_image.dmg')
-  gmail.send_email(new_email)</pre></code></p>
+# Or "move" the message to a label
+email.move_to("Faxes")</pre></code>
+<h4>5) Create new emails!</h4>
+<code><pre>new_email = MIME::Message.generate
+new_email.to "email@example.com"
+new_email.subject "Having fun in Puerto Rico!"
+plain, html = new_email.generate_multipart('text/plain', 'text/html')
+plain.content = "Text of plaintext message."
+html.content = "&lt;p&gt;Text of &lt;em&gt;html&lt;/em&gt; message.&lt;/p&gt;"
+new_email.attach_file('some_image.dmg')
+gmail.send_email(new_email)</pre></code>
+
+
 <h2>Dependencies</h2>
 <p>shared-mime-info >= 0</p>
+<p>tmail >= 1.2.3</p>
 <h2>Install</h2>
-<p>gem install ruby-gmail -s http://gemcutter.org</p>
+<p>sudo gem install ruby-gmail</p>
 <h2>License</h2>
 <p>(The MIT License)
 
@@ -128,7 +172,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
     </p>
     <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
       by running:
-      <pre>$ git clone git://github.com/dcparker/ruby-gmail</pre>
+      <pre>git clone git://github.com/dcparker/ruby-gmail</pre>
     </p>
       
     <div class="footer">
