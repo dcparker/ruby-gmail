@@ -111,14 +111,28 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
 
 ### 5) Create new emails!
 
-    new_email = MIME::Message.generate
-    new_email.to "email@example.com"
-    new_email.subject "Having fun in Puerto Rico!"
-    plain, html = new_email.generate_multipart('text/plain', 'text/html')
-    plain.content = "Text of plain message."
-    html.content = "<p>Text of <em>html</em> message.</p>"
-    new_email.attach_file('some_image.dmg')
-    gmail.send_email(new_email)
+Creating emails now uses the amazing [Mail](http://rubygems.org/gems/mail) rubygem. See its [documentation here](http://github.com/mikel/mail). Ruby-gmail will automatically configure your Mail emails to be sent via your Gmail account's SMTP, so they will be in your Gmail's "Sent" folder. Also, no need to specify the "From" email either, because ruby-gmail will set it for you.
+
+    gmail.deliver do
+      to "email@example.com"
+      subject "Having fun in Puerto Rico!"
+      text_part do
+        body "Text of plaintext message."
+      end
+      html_part do
+        body "<p>Text of <em>html</em> message.</p>"
+      end
+      add_file "/path/to/some_image.jpg"
+    end
+    # Or, generate the message first and send it later
+    email = gmail.generate_message do
+      to "email@example.com"
+      subject "Having fun in Puerto Rico!"
+      body "Spent the day on the road..."
+    end
+    email.deliver!
+    # Or...
+    gmail.deliver(email)
 
 ## Requirements
 
