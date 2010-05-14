@@ -121,14 +121,27 @@ email.label("Faxes")
 # Or "move" the message to a label
 email.move_to("Faxes")</pre></code>
 <h4>5) Create new emails!</h4>
-<code><pre>new_email = MIME::Message.generate
-new_email.to "email@example.com"
-new_email.subject "Having fun in Puerto Rico!"
-plain, html = new_email.generate_multipart('text/plain', 'text/html')
-plain.content = "Text of plaintext message."
-html.content = "&lt;p&gt;Text of &lt;em&gt;html&lt;/em&gt; message.&lt;/p&gt;"
-new_email.attach_file('some_image.dmg')
-gmail.send_email(new_email)</pre></code>
+<p>Creating emails now uses the amazing <a href="http://rubygems.org/gems/mail">Mail</a> rubygem. See its <a href="http://github.com/mikel/mail">documentation here</a>. Ruby-gmail will automatically configure your Mail emails to be sent via your Gmail account's SMTP, so they will be in your Gmail's "Sent" folder. Also, no need to specify the "From" email either, because ruby-gmail will set it for you.</p>
+<code><pre>gmail.deliver do
+  to "email@example.com"
+  subject "Having fun in Puerto Rico!"
+  text_part do
+    body "Text of plaintext message."
+  end
+  html_part do
+    body "&lt;p&gt;Text of &lt;em&gt;html&lt;/em&gt; message.&lt;/p&gt;"
+  end
+  add_file "/path/to/some_image.jpg"
+end
+# Or, generate the message first and send it later
+email = gmail.generate_message do
+  to "email@example.com"
+  subject "Having fun in Puerto Rico!"
+  body "Spent the day on the road..."
+end
+email.deliver!
+# Or...
+gmail.deliver(email)</pre></code>
 
 
 <h2>Dependencies</h2>
