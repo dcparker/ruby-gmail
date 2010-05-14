@@ -16,37 +16,17 @@ class Gmail
       @uid ||= @gmail.imap.uid_search(['HEADER', 'Message-ID', message_id])[0]
     end
 
-    def message_id
-      @message_id || begin
-        @gmail.in_mailbox(@mailbox) do
-          @message_id = @gmail.imap.uid_fetch(@uid, ['ENVELOPE'])[0].attr['ENVELOPE'].message_id
-        end
-      end
-      @message_id
-    end
-
-    def body
-      @body ||= @gmail.in_mailbox(@mailbox) do
-        @gmail.imap.uid_fetch(uid, "RFC822")[0].attr["RFC822"]
-      end
-    end
-
-    # Parsed MIME message object
-    def message
-      @message ||= MIME::Message.new(body)
-    end
-
     # IMAP Operations
     def flag(flg)
       @gmail.in_mailbox(@mailbox) do
         @gmail.imap.uid_store(uid, "+FLAGS", [flg])
-      end
+      end ? true : false
     end
 
     def unflag(flg)
       @gmail.in_mailbox(@mailbox) do
         @gmail.imap.uid_store(uid, "-FLAGS", [flg])
-      end
+      end ? true : false
     end
 
     # Gmail Operations
@@ -60,7 +40,7 @@ class Gmail
         flag(:Deleted)
       when :spam
         move_to('[Gmail]/Spam')
-      end
+      end ? true : false
     end
 
     def delete!
@@ -101,6 +81,24 @@ class Gmail
 
     def archive!
       move_to('[Gmail]/All Mail')
+    end
+
+    private
+
+    # Parsed MIME message object
+    def message
+      require 'mail'
+      _body = @gmail.in_mailbox(@mailbox) { @gmail.imap.uid_fetch(uid, "RFC822")[0].attr["RFC822"] }
+      @message ||= Mail.new(_body)
+    end
+
+    # Delegate all other methods to the Mail message
+    def method_missing(*args, &block)
+      if block_given?
+        message.send(*args, &block)
+      else
+        message.send(*args)
+      end
     end
   end
 end
