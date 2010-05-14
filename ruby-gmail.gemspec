@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ruby-gmail}
-  s.version = "0.1.1"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["BehindLogic"]
-  s.date = %q{2010-05-11}
+  s.date = %q{2010-05-14}
   s.description = %q{A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and send multipart emails; archive, mark as read/unread, delete emails; and manage labels.}
   s.email = %q{gems@behindlogic.com}
   s.extra_rdoc_files = [
@@ -26,11 +26,6 @@ Gem::Specification.new do |s|
      "lib/gmail.rb",
      "lib/gmail/mailbox.rb",
      "lib/gmail/message.rb",
-     "lib/ietf/rfc2045.rb",
-     "lib/ietf/rfc822.rb",
-     "lib/mime/entity.rb",
-     "lib/mime/entity_tmail.rb",
-     "lib/mime/message.rb",
      "lib/smtp_tls.rb",
      "ruby-gmail.gemspec",
      "test/test_gmail.rb",
@@ -57,14 +52,14 @@ Support me in making new and better gems:[0m [31;4mhttp://pledgie.com/campaign
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<shared-mime-info>, [">= 0"])
-      s.add_runtime_dependency(%q<tmail>, [">= 1.2.3"])
+      s.add_runtime_dependency(%q<mail>, [">= 2.2.1"])
     else
       s.add_dependency(%q<shared-mime-info>, [">= 0"])
-      s.add_dependency(%q<tmail>, [">= 1.2.3"])
+      s.add_dependency(%q<mail>, [">= 2.2.1"])
     end
   else
     s.add_dependency(%q<shared-mime-info>, [">= 0"])
-    s.add_dependency(%q<tmail>, [">= 1.2.3"])
+    s.add_dependency(%q<mail>, [">= 2.2.1"])
   end
 end
 
