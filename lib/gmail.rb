@@ -50,7 +50,7 @@ class Gmail
 
   # gmail.label(name)
   def label(name)
-    mailboxes[name] ||= Mailbox.new(self, mailbox)
+    mailboxes[name] ||= Mailbox.new(self, name)
   end
   alias :mailbox :label
 
@@ -119,7 +119,7 @@ class Gmail
       end
       return value
     else
-      mailboxes[name] ||= Mailbox.new(self, mailbox)
+      mailboxes[mailbox] ||= Mailbox.new(self, mailbox)
     end
   end
   alias :in_label :in_mailbox
