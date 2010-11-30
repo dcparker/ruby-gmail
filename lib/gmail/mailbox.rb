@@ -23,6 +23,39 @@ class Gmail
       name
     end
 
+	FLAG_KEYWORDS = [
+		['ANSWERED', 'UNANSWERED'],
+		['DELETED', 'UNDELETED'],
+		['DRAFT', 'UNDRAFT'],
+		['FLAGGED', 'UNFLAGGED'],
+		['RECENT', 'OLD'],
+		['SEEN', 'UNSEEN']
+	]
+	VALID_SEARCH_KEYS = %w[
+		ALL
+		BCC
+		BEFORE
+		BODY
+		CC
+		FROM
+		HEADER
+		KEYWORD
+		LARGER
+		NEW
+		NOT
+		ON
+		OR
+		SENTBEFORE
+		SENTON
+		SENTSINCE
+		SINCE
+		SMALLER
+		SUBJECT
+		TEXT
+		TO
+		UID
+		UNKEYWORD
+	] + FLAG_KEYWORDS.flatten
     # Method: emails
     # Args: [ :all | :unread | :read ]
     # Opts: {:since => Date.new}
@@ -45,11 +78,44 @@ class Gmail
       if !opts.empty?
         # Support for several search macros
         # :before => Date, :on => Date, :since => Date, :from => String, :to => String
-        search.concat ['SINCE', opts[:after].to_imap_date] if opts[:after]
-        search.concat ['BEFORE', opts[:before].to_imap_date] if opts[:before]
-        search.concat ['ON', opts[:on].to_imap_date] if opts[:on]
-        search.concat ['FROM', opts[:from]] if opts[:from]
-        search.concat ['TO', opts[:to]] if opts[:to]
+		opts = opts.dup
+		VALID_SEARCH_KEYS.each do |keyword|
+			key = keyword.downcase.intern
+			if opts[key]
+				val = opts.delete(key)
+				case val
+				when Date, Time
+					search.concat([keyword, val.to_imap_date])
+				when String
+					search.concat([keyword, val])
+				when Numeric
+					search.concat([keyword, val.to_s])
+				when Array
+					search.concat([keyword, *val])
+				when TrueClass, FalseClass
+					# If it's a known flag keyword & val == false,
+					# try to invert it's meaning.
+					if row = FLAG_KEYWORDS.find { |row| row.include?(keyword) }
+						row_index = row.index(keyword)
+						altkey = row[ val ? row_index : 1 - row_index ]
+						search.push(altkey)
+					else
+						search.push(keyword) if val
+					end
+				when NilClass
+					next
+				else
+					search.push(keyword) # e.g. flag
+				end
+			end
+		end
+
+		# API compatibility
+        search.concat ['SINCE', opts.delete(:after).to_imap_date] if opts[:after]
+
+		unless opts.empty?
+			raise "Unrecognised keys: #{opts.keys.inspect}"
+		end
       end
 
       # puts "Gathering #{(aliases[key] || key).inspect} messages for mailbox '#{name}'..."
