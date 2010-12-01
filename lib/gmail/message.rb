@@ -141,8 +141,16 @@ class Gmail
       attachments.each {|a| a.save_to_file(path) }
     end
 
-    private
+	def loaded?
+		!! @message
+	end
 
+	def set_body(body)
+		require 'mail'
+		@message = Mail.new(body)
+	end
+
+    private
     # Parsed MIME message object
     def message
 	  return @message if @message

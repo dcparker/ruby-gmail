@@ -75,6 +75,9 @@ class Gmail
       else
         raise ArgumentError, "Couldn't make sense of arguments to #emails - should be an optional hash of options preceded by an optional read-status bit; OR simply an array of parameters to pass directly to the IMAP uid_search call."
       end
+
+	  fetch = opts.delete(:fetch)
+
       if !opts.empty?
         # Support for several search macros
         # :before => Date, :on => Date, :since => Date, :from => String, :to => String
@@ -118,10 +121,21 @@ class Gmail
 		end
       end
 
-      # puts "Gathering #{(aliases[key] || key).inspect} messages for mailbox '#{name}'..."
+	  list = []
+
       @gmail.in_mailbox(self) do
-        @gmail.imap.uid_search(search).collect { |uid| messages[uid] ||= Message.new(@gmail, self, uid) }
+		uids = @gmail.imap.uid_search(search)
+        list = uids.collect { |uid| messages[uid] ||= Message.new(@gmail, self, uid) }
+		if fetch
+			missing = list.reject { |message| message.loaded? }.map { |message| message.uid }
+			@gmail.imap.uid_fetch(missing, 'RFC822').each do |info|
+				message = messages[info.attr['UID']]
+				message.set_body(info.attr['RFC822'])
+			end
+		end
       end
+
+	  list
     end
 
     # This is a convenience method that really probably shouldn't need to exist, but it does make code more readable
