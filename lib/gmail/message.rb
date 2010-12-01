@@ -28,6 +28,48 @@ class Gmail
       end ? true : false
     end
 
+	def message_id
+		@message_id ||= self.header['Message-ID'].value
+	end
+
+	def has_label?(label)
+		return true if @mailbox == @gmail.mailbox(label)
+		@gmail.in_mailbox(@gmail.mailbox(label)) do |mailbox|
+			search = ['HEADER', 'Message-ID', self.message_id]
+			res = @gmail.imap.uid_search(search)
+			if res && !res.empty?
+				return true
+			end
+		end
+		false
+	end
+
+	def archived?
+		! has_label?(@gmail.inbox_label)
+	end
+
+	def starred?
+		has_label?(@gmail.starred_label)
+	end
+
+	def sent?
+		has_label?(@gmail.sent_label)
+	end
+
+	def important?
+		has_label?(@gmail.important_label)
+	end
+
+	def labels
+		mbox = @mailbox
+		list = [mbox.name]
+		@gmail.normal_labels.each do |label|
+			next if mbox.name == label
+			list << label if has_label?(label)
+		end
+		list
+	end
+
     # Gmail Operations
     def mark(flag)
       case flag
@@ -38,7 +80,7 @@ class Gmail
       when :deleted
         flag(:Deleted)
       when :spam
-        move_to('[Gmail]/Spam')
+        move_to(@gmail.spam_label)
       end ? true : false
     end
 
@@ -71,21 +113,46 @@ class Gmail
 
     # We're not sure of any 'labels' except the 'mailbox' we're in at the moment.
     # Research whether we can find flags that tell which other labels this email is a part of.
-    # def remove_label(name)
-    # end
+    def remove_label(label)
+		return false if label.downcase == @gmail.allmail_label.downcase
+
+		return delete! if label.downcase == @mailbox.name.downcase
+
+		@gmail.in_mailbox(@gmail.label(label)) do |mailbox|
+			message = mailbox.emails(['HEADER', 'Message-ID', self.message_id]).first
+			if message
+				message.delete!
+			else
+				# Doesn't have label in the first place?
+			end
+		end
+    end
 
     def move_to(name)
       label(name) && delete!
     end
 
     def archive!
-      move_to('[Gmail]/All Mail')
+      move_to(@gmail.allmail_label)
     end
 
-    private
+    def save_attachments_to(path=nil)
+      attachments.each {|a| a.save_to_file(path) }
+    end
 
+	def loaded?
+		!! @message
+	end
+
+	def set_body(body)
+		require 'mail'
+		@message = Mail.new(body)
+	end
+
+    private
     # Parsed MIME message object
     def message
+	  return @message if @message
       require 'mail'
       _body = @gmail.in_mailbox(@mailbox) { @gmail.imap.uid_fetch(uid, "RFC822")[0].attr["RFC822"] }
       @message ||= Mail.new(_body)

@@ -33,19 +33,96 @@ class Gmail
   #  gmail.label('News')
   #  
   ###########################
-
-  def inbox
-    in_label('inbox')
-  end
-  
   def create_label(name)
+	@xlist_result = nil
     imap.create(name)
   end
 
   # List the available labels
   def labels
-    (imap.list("", "%") + imap.list("[Gmail]/", "%")).inject([]) { |labels,label|
-      label[:name].each_line { |l| labels << l }; labels }
+	labels = []
+    prefixes = ['']
+	done = []
+	until prefixes.empty?
+		prefix = prefixes.shift
+		done << prefix
+		(imap.list(prefix, "%")||[]).each { |e|
+			if e[:attr].include?(:Haschildren)
+				unless done.include?(e[:name]+"/") or e[:name].empty?
+					prefixes << e[:name]+"/"
+				end
+			end
+			unless e[:attr].include?(:Noselect)
+			  labels << e[:name]
+			end
+		}
+	end
+	labels
+  end
+
+  def imap_xlist
+	  unless @imap.respond_to?(:xlist)
+		def @imap.xlist(refname, mailbox)
+			handler = proc do |resp|
+			  if resp.kind_of?(Net::IMAP::UntaggedResponse) and resp.name == "XLIST" && resp.raw_data.nil?
+				list_resp = Net::IMAP::ResponseParser.new.instance_eval {
+					@str, @pos, @token = "#{resp.name} " + resp.data, 0, nil
+					@lex_state = Net::IMAP::ResponseParser::EXPR_BEG
+					list_response
+				}
+				if @responses['XLIST'].last == resp.data
+					@responses['XLIST'].pop
+					@responses['XLIST'].push(list_resp.data)
+				end
+			  end
+		  end
+		  synchronize do
+		    add_response_handler(handler)
+		    send_command('XLIST', '', '*')
+		    remove_response_handler(handler)
+		    return @responses.delete('XLIST')
+		  end
+		end
+	  end
+
+	  @xlist_result ||= @imap.xlist('', '*')
+  end
+
+  def self.special_labels
+	  [:Inbox, :Allmail, :Spam, :Trash, :Drafts, :Important, :Starred, :Sent]
+  end
+
+  def special_labels
+	  self.class.special_labels
+  end
+
+  def normal_labels
+	  imap_xlist.reject { |label|
+		label.attr.include?(:Noselect) or label.attr.any? { |flag| special_labels.include?(flag) }
+	  }.map { |label|
+		  label.name
+	  }
+  end
+
+  def imap_xlist!
+	  @xlist_result = nil
+	  imap_xlist
+  end
+
+  def label_of_type(type)
+	info = imap_xlist.find { |l| l.attr.include?(type) }
+	info && info.name || nil
+  end
+
+  special_labels.each do |label|
+	  module_eval <<-EOL
+	    def #{label.to_s.downcase} &block
+		  in_label(#{label.to_s.downcase}_label, &block)
+		end
+		def #{label.to_s.downcase}_label
+          label_of_type(#{label.inspect})
+		end
+	  EOL
   end
 
   # gmail.label(name)
