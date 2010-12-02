@@ -129,8 +129,6 @@ class Gmail
       end
     end
 
-    # We're not sure of any 'labels' except the 'mailbox' we're in at the moment.
-    # Research whether we can find flags that tell which other labels this email is a part of.
     def remove_label(label)
 		return false if label.downcase == @gmail.allmail_label.downcase
 
@@ -150,8 +148,10 @@ class Gmail
       label(name) && delete!
     end
 
+	# Archive, in the gmail sense, means remove label Inbox, 
+	# rather than simply remove current label
     def archive!
-      move_to(@gmail.allmail_label)
+      remove_label(@gmail.inbox_label)
     end
 
     def save_attachments_to(path=nil)
