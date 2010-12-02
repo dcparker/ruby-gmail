@@ -29,8 +29,25 @@ class Gmail
       end ? true : false
     end
 
+	attr_writer :message_id
+	attr_writer :envelope
+	def message_id?
+		!! (@envelope || @message_id || @message)
+	end
 	def message_id
-		@message_id ||= self.header['Message-ID'].value
+		@message_id ||= @envelope ? @envelope.message_id : self.header['Message-ID'].value
+	end
+	def envelope
+		@envelope ||= @gmail.in_mailbox(@mailbox) { @gmail.imap.uid_fetch(uid, "ENVELOPE")[0].attr["ENVELOPE"] }
+	end
+	def subject
+		@envelope ? @envelope.subject : self.header['Subject'].value
+	end
+	def from
+		@envelope ? @envelope.from : self.header['From'].value
+	end
+	def to
+		@envelope ? @envelope.to : self.header['To'].value
 	end
 
 	def has_label?(label)
