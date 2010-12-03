@@ -88,17 +88,17 @@ class Gmail
 	  @xlist_result ||= @imap.xlist('', '*')
   end
 
-  def self.special_labels
+  def self.gmail_label_types
 	  [:Inbox, :Allmail, :Spam, :Trash, :Drafts, :Important, :Starred, :Sent]
   end
 
-  def special_labels
-	  self.class.special_labels
+  def gmail_label_types
+	  self.class.gmail_label_types
   end
 
   def normal_labels
 	  imap_xlist.reject { |label|
-		label.attr.include?(:Noselect) or label.attr.any? { |flag| special_labels.include?(flag) }
+		label.attr.include?(:Noselect) or label.attr.any? { |flag| gmail_label_types.include?(flag) }
 	  }.map { |label|
 		  label.name
 	  }
@@ -114,7 +114,7 @@ class Gmail
 	info && info.name || nil
   end
 
-  special_labels.each do |label|
+  gmail_label_types.each do |label|
 	  module_eval <<-EOL
 	    def #{label.to_s.downcase} &block
 		  in_label(#{label.to_s.downcase}_label, &block)
