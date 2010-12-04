@@ -39,6 +39,9 @@ class Gmail
 	def envelope
 		@envelope ||= @gmail.in_mailbox(@mailbox) { @gmail.imap.uid_fetch(uid, "ENVELOPE")[0].attr["ENVELOPE"] }
 	end
+	def envelope?
+		!! @envelope
+	end
 	def subject
 		@envelope ? @envelope.subject : self.header['Subject'].value
 	end

@@ -41,27 +41,16 @@ class Gmail
   # List the available labels
   def labels
 	labels = []
-    prefixes = ['']
-	done = []
-	until prefixes.empty?
-		prefix = prefixes.shift
-		done << prefix
-		(imap.list(prefix, "%")||[]).each { |e|
-			if e[:attr].include?(:Haschildren)
-				unless done.include?(e[:name]+"/") or e[:name].empty?
-					prefixes << e[:name]+"/"
-				end
-			end
-			unless e[:attr].include?(:Noselect)
-			  labels << e[:name]
-			end
-		}
-	end
+	(imap.list('', "*")||[]).each { |e|
+		unless e.attr.include?(:Noselect)
+		  labels << e.name
+		end
+	}
 	labels
   end
 
   def imap_xlist
-	  unless @imap.respond_to?(:xlist)
+	  unless imap.respond_to?(:xlist)
 		def @imap.xlist(refname, mailbox)
 			handler = proc do |resp|
 			  if resp.kind_of?(Net::IMAP::UntaggedResponse) and resp.name == "XLIST" && resp.raw_data.nil?
@@ -78,7 +67,7 @@ class Gmail
 		  end
 		  synchronize do
 		    add_response_handler(handler)
-		    send_command('XLIST', '', '*')
+		    send_command('XLIST', refname, mailbox)
 		    remove_response_handler(handler)
 		    return @responses.delete('XLIST')
 		  end
@@ -100,7 +89,7 @@ class Gmail
 	  imap_xlist.reject { |label|
 		label.attr.include?(:Noselect) or label.attr.any? { |flag| gmail_label_types.include?(flag) }
 	  }.map { |label|
-		  label.name
+		label.name
 	  }
   end
 

@@ -160,7 +160,12 @@ class Gmail
 		def each(&block)
 			@list.each(&block)
 		end
+		def empty?
+			@list.empty?
+		end
 		def with_label(label)
+			return MessageList.new(@gmail, []) if empty?
+
 			label = label.is_a?(String) ? @gmail.label(label) : label
 			@gmail.in_label(label) do |mbox|
 
@@ -190,7 +195,7 @@ class Gmail
 
 				message_ids += @gmail.imap.uid_fetch(missing_uids, ['ENVELOPE']).map do |info|
 					message = mbox.messages[info.attr['UID']]
-					message.envelope ||= info.attr['ENVELOPE']
+					message.envelope = info.attr['ENVELOPE']
 					info.attr['ENVELOPE'].message_id
 				end
 
