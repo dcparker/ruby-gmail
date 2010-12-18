@@ -165,6 +165,29 @@ class GmailTest < Test::Unit::TestCase
 	  assert_equal "header-#{1}", result.list[0].header['X-Extra-Header'].value
   end
 
+  def test_search_and_then_fetch_rfc822_doesnt_fetch_if_filter_result_is_empty
+      setup_mocks :login => true
+	  add_xlist_mocks
+	  add_search_mocks :uids => [1, 2, 3, 4],
+		  :fetch => true,
+		  :results => [ email_mock(1), email_mock(2), email_mock(3), email_mock(4)]
+
+	  result = @gmail.inbox.emails(:after => Date.today, :fetch => true)
+
+	  add_search_mocks :search => [ 'OR', 'OR', 'OR', 'HEADER', 'Message-ID', '<test-uid-1@gmail.com>', 'HEADER',
+		  'Message-ID', '<test-uid-2@gmail.com>', 'HEADER', 'Message-ID', '<test-uid-3@gmail.com>',
+	     'HEADER', 'Message-ID', '<test-uid-4@gmail.com>' ],
+		  :uids => [],
+		  :mailbox => '[Google Mail]/Sent Mail',
+		  :results => [ ],
+		  :assert_never_fetches => true
+
+      result = result.with_label('[Google Mail]/Sent Mail')
+
+	  assert_instance_of Gmail::Mailbox::MessageList, result
+	  assert_equal 0, result.size
+  end
+
   def test_empty_search_doesnt_search_on_filter
 	  setup_mocks :login => true
 	  add_xlist_mocks
@@ -176,7 +199,18 @@ class GmailTest < Test::Unit::TestCase
 
 	  assert_instance_of Gmail::Mailbox::MessageList, result
 	  assert_equal 0, result.size
+  end
 
+  def test_auto_segment
+	  count = 0
+
+	  result = Gmail.auto_segment((0..99).to_a, 5) do |list|
+		  count += 1
+		  list.map { |i| i * 2 }
+	  end
+
+	  assert_equal 20, count
+	  assert_equal (0..99).map{|i|i*2}, result
   end
   
   private
@@ -221,9 +255,15 @@ EOB
 		  with(options[:search]).
 		  returns(options[:uids])
 
-	  @imap.expects(:uid_fetch).
-		  with(options[:uids], (options[:fetch] ? ['ENVELOPE', 'RFC822'] : ['ENVELOPE'])).
-		  returns(options[:results])
+	  if options[:uids].empty?
+		 if options[:assert_never_fetches]
+           @imap.expects(:uid_fetch).never
+		 end
+	  else
+         @imap.expects(:uid_fetch).
+			  with(options[:uids], (options[:fetch] ? ['ENVELOPE', 'RFC822'] : ['ENVELOPE'])).
+			  returns(options[:results])
+	  end
   end
 
   def mail_mock(name, *flags)
