@@ -7,6 +7,13 @@ class Object
 end
 
 class Gmail
+  def self.auto_segment(list, batch_size)
+	res = []
+	until list.empty?
+		res += yield(list.shift(batch_size))
+	end
+	res
+  end
   class Mailbox
     attr_reader :name
 
@@ -127,31 +134,33 @@ class Gmail
 		uids = @gmail.imap.uid_search(search)
         list = uids.collect { |uid| messages[uid] ||= Message.new(@gmail, self, uid) }
 
+		fetch_bits = ['ENVELOPE']
 		if fetch
+			fetch_bits << 'RFC822'
 			missing = list.reject { |message| message.loaded? }.map { |message| message.uid }
-			@gmail.imap.uid_fetch(missing, ['ENVELOPE', 'RFC822']).each do |info|
-				message = messages[info.attr['UID']]
-				message.envelope = info.attr['ENVELOPE']
-				message.set_body(info.attr['RFC822'])
-			end
 		else
 			missing = list.reject { |message| message.message_id? }.map { |message| message.uid }
-			@gmail.imap.uid_fetch(missing, ['ENVELOPE']).each do |info|
+		end
+
+		Gmail.auto_segment(missing, 25) do |fetch_list|
+			@gmail.imap.uid_fetch(fetch_list, fetch_bits).each do |info|
 				message = messages[info.attr['UID']]
 				message.envelope = info.attr['ENVELOPE']
-				message.message_id = info.attr['ENVELOPE'].message_id
+				message.message_id = message.envelope.message_id
+				message.set_body(info.attr['RFC822']) if fetch
 			end
 		end
       end
 
-	  MessageList.new(@gmail, list)
+	  MessageList.new(@gmail, self, list)
     end
 
 	class MessageList
 		include Enumerable
-		attr_reader :list
-		def initialize(gmail, list)
+		attr_reader :list, :mailbox
+		def initialize(gmail, mailbox, list)
 			@gmail = gmail
+			@mailbox = mailbox
 			@list = list
 		end
 		def size
@@ -163,19 +172,38 @@ class Gmail
 		def empty?
 			@list.empty?
 		end
+		def fetch_all
+			@gmail.in_label(@mailbox) do |mbox|
+				Gmail.auto_segment(@list, 25) do |fetch_uids|
+					@gmail.imap.uid_fetch(fetch_uids, ['ENVELOPE', 'RFC822']).map do |info|
+						# These messages must already exist in the mailbox hash
+						# because they have already had the envelopes fetched
+						message = mbox.messages[info.attr['UID']]
+						message.envelope = info.attr['ENVELOPE']
+						message.message_id = message.envelope.message_id
+						info.attr['ENVELOPE'].message_id
+					end
+				end
+			end
+			self
+		end
 		def with_label(label)
-			return MessageList.new(@gmail, []) if empty?
+			return MessageList.new(@gmail, @mailbox, []) if empty?
 
 			label = label.is_a?(String) ? @gmail.label(label) : label
 			@gmail.in_label(label) do |mbox|
 
 				# Search for message ids in named folder
-				search = []
-				@list.each_with_index do |m, index|
-					search.unshift "OR" unless index.zero?#.empty?
-					search << "HEADER" << "Message-ID" << m.message_id
+				uids = []
+
+				uids = Gmail.auto_segment(@list, 25) do |search_list|
+					search = []
+					search_list.each_with_index do |m, index|
+						search.unshift "OR" unless index.zero?
+						search << "HEADER" << "Message-ID" << m.message_id
+					end
+					@gmail.imap.uid_search(search)
 				end
-				uids = @gmail.imap.uid_search(search)
 
 				# Fetch envelopes for uids
 				message_ids = []
@@ -193,13 +221,16 @@ class Gmail
 					message.uid
 				}
 
-				message_ids += @gmail.imap.uid_fetch(missing_uids, ['ENVELOPE']).map do |info|
-					message = mbox.messages[info.attr['UID']]
-					message.envelope = info.attr['ENVELOPE']
-					info.attr['ENVELOPE'].message_id
+				message_ids += Gmail.auto_segment(missing_uids, 25) do |fetch_uids|
+					@gmail.imap.uid_fetch(fetch_uids, ['ENVELOPE']).map do |info|
+						message = mbox.messages[info.attr['UID']]
+						message.envelope = info.attr['ENVELOPE']
+						message.message_id = message.envelope.message_id
+						info.attr['ENVELOPE'].message_id
+					end
 				end
 
-				MessageList.new(@gmail, @list.select { |m| message_ids.include?(m.message_id) })
+				MessageList.new(@gmail, mbox, uids.map { |uid| mbox.messages[uid] })
 			end
 		end
 	end
