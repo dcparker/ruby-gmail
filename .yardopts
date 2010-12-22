@@ -1,0 +1,4 @@
+--no-private
+--readme README.markdown
+--hide-void-return
+

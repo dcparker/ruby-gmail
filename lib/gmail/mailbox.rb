@@ -30,6 +30,7 @@ class Gmail
       name
     end
 
+	# @private
 	FLAG_KEYWORDS = [
 		['ANSWERED', 'UNANSWERED'],
 		['DELETED', 'UNDELETED'],
@@ -38,6 +39,8 @@ class Gmail
 		['RECENT', 'OLD'],
 		['SEEN', 'UNSEEN']
 	]
+	
+	# @private
 	VALID_SEARCH_KEYS = %w[
 		ALL
 		BCC
@@ -63,9 +66,14 @@ class Gmail
 		UID
 		UNKEYWORD
 	] + FLAG_KEYWORDS.flatten
-    # Method: emails
-    # Args: [ :all | :unread | :read ]
-    # Opts: {:since => Date.new}
+
+	# @group Search functions
+
+    # Search for emails that match given criteria
+	#
+	# @return [Gmail::MessageList] List of messages that match search
+    # @param key_or_opts [:all, :unread, :read] Messages to search for
+    # @param opts [Hash] Additional search paramters e.g. #=> { :since => Date.new }
     def emails(key_or_opts = :all, opts={})
       if key_or_opts.is_a?(Hash) && opts.empty?
         search = ['ALL']
@@ -155,22 +163,104 @@ class Gmail
 	  MessageList.new(@gmail, self, list)
     end
 
-			end
-
-
-
-
-
-
-			end
-		end
-	end
-
-    # This is a convenience method that really probably shouldn't need to exist, but it does make code more readable
+	# This is a convenience method that really probably shouldn't need to exist, but it does make code more readable
     # if seriously all you want is the count of messages.
+	#
+	# @param args [Array,Hash] As for {#emails}
+	# @return [Number] Number of emails that match search criteria
     def count(*args)
       emails(*args).length
     end
+
+	# @endgroup
+
+	# @group IMAP functions
+
+	# Bulk flag set
+	#
+	# @param uids [Array]   List of uids
+	# @param flag [Symbol]  Flag to set
+	# @return    [Boolean] True to indicate success
+	def flag(uids, flag)
+		@gmail.in_mailbox(self) do
+        	Gmail.auto_segment(uids, 25) do |batch_uids|
+				p batch_uids
+				@gmail.imap.uid_store(batch_uids, "+FLAGS", [flag])
+			end
+      	end ? true : false
+	end
+
+	# Bulk flag unset
+	#
+	# @param uids [Array<Fixnum>]   List of uids
+	# @param flag [Symbol]  Flag to unset
+	# @return    [Boolean] True to indicate success
+	def unflag(uids, flag)
+      @gmail.in_mailbox(self) do
+	    Gmail.auto_segment(uids,25) do |batch_uids|
+          @gmail.imap.uid_store(batch_uids, "-FLAGS", [flag])
+		end
+      end ? true : false
+	end
+
+
+	# Copy UIDs to mailbox/label
+	#
+	# @param uids [Array<Fixnum>]  List of uids
+	# @param name [String]
+    def copy_to(uids, name)
+      @gmail.in_mailbox(@mailbox) do
+        begin
+		  Gmail.auto_segment(uids,25) do |batch_uids|
+            @gmail.imap.uid_copy(batch_uids, name)
+		  end
+        rescue Net::IMAP::NoResponseError
+          raise Gmail::NoLabel, "No label `#{name}' exists!"
+        end
+      end
+    end
+
+	# Move UIDs to mailbox/label
+	#
+	# @param uids [Array<Fixnum>]  List of uids
+	# @param name [String]
+    def move_to(uids, name)
+      @gmail.in_mailbox(@mailbox) do
+        begin
+		  Gmail.auto_segment(uids, 25) do |batch_uids|
+            @gmail.imap.uid_copy(batch_uids, name)
+			@gmail.imap.uid_store(batch_uids, "+FLAGS", [:Deleted])
+		  end
+        rescue Net::IMAP::NoResponseError
+          raise Gmail::NoLabel, "No label `#{name}' exists!"
+        end
+      end
+    end
+
+	# Search for message in mailbox by message id
+	#
+	# @param message_id [String] Message ID to look for
+	# @return [Boolean] True to indicate success
+	def contains_message?(message_id)
+		!! uid_for_message_id(message_id)
+	end
+
+	# Find UID for Message ID
+	#
+	# @param message_id [String] Message ID to look for
+	# @return [Number,nil] UID or nil
+	def uid_for_message_id(message_id)
+		@gmail.in_mailbox(self) do |mailbox|
+			search = ['HEADER', 'Message-ID', message_id]
+			res = @gmail.imap.uid_search(search)
+			if res && !res.empty?
+				return res[0] 
+			end
+		end
+		nil
+	end
+
+	# @endgroup
 
     def messages
       @messages ||= {}

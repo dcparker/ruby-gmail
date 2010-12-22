@@ -12,21 +12,20 @@ class Gmail
 
     # Auto IMAP info
     def uid
-      @uid ||= @gmail.imap.uid_search(['HEADER', 'Message-ID', message_id])[0]
+      @uid ||= @gmail.in_mailbox(@mailbox) { @gmail.imap.uid_search(['HEADER', 'Message-ID', message_id])[0] }
     end
 
-    # IMAP Operations
+    # @group IMAP Operations
+
     def flag(flg)
-      @gmail.in_mailbox(@mailbox) do
-        @gmail.imap.uid_store(uid, "+FLAGS", [flg])
-      end ? true : false
+	  @mailbox.flag([uid], flg)
     end
 
     def unflag(flg)
-      @gmail.in_mailbox(@mailbox) do
-        @gmail.imap.uid_store(uid, "-FLAGS", [flg])
-      end ? true : false
+ 	  @mailbox.flag([uid], flg)
     end
+
+	# @endgroup
 
 	attr_writer :message_id
 	attr_writer :envelope
@@ -54,13 +53,7 @@ class Gmail
 
 	def has_label?(label)
 		return true if @mailbox == @gmail.mailbox(label)
-		@gmail.in_mailbox(@gmail.mailbox(label)) do |mailbox|
-			search = ['HEADER', 'Message-ID', self.message_id]
-			res = @gmail.imap.uid_search(search)
-			if res && !res.empty?
-				return true
-			end
-		end
+		@gmail.mailbox(label).contains_message?(self.message_id)
 		false
 	end
 
@@ -110,13 +103,7 @@ class Gmail
     end
 
     def label(name)
-      @gmail.in_mailbox(@mailbox) do
-        begin
-          @gmail.imap.uid_copy(uid, name)
-        rescue Net::IMAP::NoResponseError
-          raise Gmail::NoLabel, "No label `#{name}' exists!"
-        end
-      end
+	  @mailbox.copy_to(uid, name)
     end
 
     def label!(name)
@@ -147,7 +134,7 @@ class Gmail
     end
 
     def move_to(name)
-      label(name) && delete!
+      @mailbox.move_to(uid, name)
     end
 
 	# Archive, in the gmail sense, means remove label Inbox, 
