@@ -155,6 +155,17 @@ class Gmail
 	  MessageList.new(@gmail, self, list)
     end
 
+			end
+
+
+
+
+
+
+			end
+		end
+	end
+
     # This is a convenience method that really probably shouldn't need to exist, but it does make code more readable
     # if seriously all you want is the count of messages.
     def count(*args)

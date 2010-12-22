@@ -105,7 +105,7 @@ class GmailTest < Test::Unit::TestCase
 
 	  result = @gmail.inbox.emails(:after => Date.today, :fetch => true)
 
-	  assert_instance_of Gmail::Mailbox::MessageList, result
+	  assert_instance_of Gmail::MessageList, result
 	  assert_equal 3, result.size
   end
   
@@ -126,7 +126,7 @@ class GmailTest < Test::Unit::TestCase
 
       result = result.with_label('[Google Mail]/Sent Mail')
 
-	  assert_instance_of Gmail::Mailbox::MessageList, result
+	  assert_instance_of Gmail::MessageList, result
 	  assert_equal 2, result.size
   end
 
@@ -140,7 +140,7 @@ class GmailTest < Test::Unit::TestCase
 
 	  result = @gmail.inbox.emails(:after => Date.today, :fetch => true)
 
-	  assert_instance_of Gmail::Mailbox::MessageList, result
+	  assert_instance_of Gmail::MessageList, result
 	  assert_equal 1, result.size
 
 	  assert_equal "Subject 1", result.list[0].subject
@@ -155,7 +155,7 @@ class GmailTest < Test::Unit::TestCase
 
 	  result = @gmail.inbox.emails(:after => Date.today, :fetch => false)
 
-	  assert_instance_of Gmail::Mailbox::MessageList, result
+	  assert_instance_of Gmail::MessageList, result
 	  assert_equal 1, result.size
 
 	  response = mock("response-#{1}")
@@ -184,7 +184,7 @@ class GmailTest < Test::Unit::TestCase
 
       result = result.with_label('[Google Mail]/Sent Mail')
 
-	  assert_instance_of Gmail::Mailbox::MessageList, result
+	  assert_instance_of Gmail::MessageList, result
 	  assert_equal 0, result.size
   end
 
@@ -197,7 +197,7 @@ class GmailTest < Test::Unit::TestCase
 
 	  result = result.with_label('[Google Mail]/Sent Mail')
 
-	  assert_instance_of Gmail::Mailbox::MessageList, result
+	  assert_instance_of Gmail::MessageList, result
 	  assert_equal 0, result.size
   end
 
