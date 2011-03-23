@@ -1,3 +1,10 @@
+# Notice
+I are looking for for a new project owner for this project.  Please contact me if you are interested in maintaining this 
+project or being added as a contributor.  
+
+Sincerely,  
+[Joshavne Potter](mailto:yourtech@gmail.com?subject=ruby-gmail%20gem%20support)
+
 # ruby-gmail
 
 * Homepage: [http://dcparker.github.com/ruby-gmail/](http://dcparker.github.com/ruby-gmail/)
