@@ -1,5 +1,5 @@
 # Notice
-I are looking for for a new project owner for this project.  Please contact me if you are interested in maintaining this 
+I am looking for for a new project owner for this project.  Please contact me if you are interested in maintaining this 
 project or being added as a contributor.  
 
 Sincerely,  
