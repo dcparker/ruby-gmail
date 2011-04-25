@@ -26,37 +26,111 @@ class Gmail
     end
   end
 
-  ###########################
-  #  READING EMAILS
-  # 
-  #  gmail.inbox
-  #  gmail.label('News')
-  #  
-  ###########################
+  # @group Labels/Mailbox uility functions
 
-  def inbox
-    in_label('inbox')
-  end
-  
+  # Create label
   def create_label(name)
+	@xlist_result = nil
     imap.create(name)
   end
 
   # List the available labels
   def labels
-    (imap.list("", "%") + imap.list("[Gmail]/", "%")).inject([]) { |labels,label|
-      label[:name].each_line { |l| labels << l }; labels }
+	labels = []
+	(imap.list('', "*")||[]).each { |e|
+		unless e.attr.include?(:Noselect)
+		  labels << e.name
+		end
+	}
+	labels
+  end
+
+  def imap_xlist
+	  unless imap.respond_to?(:xlist)
+		def @imap.xlist(refname, mailbox)
+			handler = proc do |resp|
+			  if resp.kind_of?(Net::IMAP::UntaggedResponse) and resp.name == "XLIST" && resp.raw_data.nil?
+				list_resp = Net::IMAP::ResponseParser.new.instance_eval {
+					@str, @pos, @token = "#{resp.name} " + resp.data, 0, nil
+					@lex_state = Net::IMAP::ResponseParser::EXPR_BEG
+					list_response
+				}
+				if @responses['XLIST'].last == resp.data
+					@responses['XLIST'].pop
+					@responses['XLIST'].push(list_resp.data)
+				end
+			  end
+		  end
+		  synchronize do
+		    add_response_handler(handler)
+		    send_command('XLIST', refname, mailbox)
+		    remove_response_handler(handler)
+		    return @responses.delete('XLIST')
+		  end
+		end
+	  end
+
+	  @xlist_result ||= @imap.xlist('', '*')
+  end
+  protected :imap_xlist
+
+  def self.gmail_label_types
+	  [:Inbox, :Allmail, :Spam, :Trash, :Drafts, :Important, :Starred, :Sent]
+  end
+
+  # List of known GMail label types
+  #
+  # These correspond to the special flags returned by the XLIST command
+  def gmail_label_types
+	  self.class.gmail_label_types
+  end
+
+  # Return list of "normal" labels
+  #
+  # Filters out any special mailboxes
+  def normal_labels
+	  imap_xlist.reject { |label|
+		label.attr.include?(:Noselect) or label.attr.any? { |flag| gmail_label_types.include?(flag) }
+	  }.map { |label|
+		label.name
+	  }
+  end
+
+  def imap_xlist!
+	  @xlist_result = nil
+	  imap_xlist
+  end
+  protected :imap_xlist!
+
+  # Returns name of label/mailbox of specified type
+  #
+  # @param type [Symbol] One of the types returned by {#gmail_label_types}
+  def label_of_type(type)
+	info = imap_xlist.find { |l| l.attr.include?(type) }
+	info && info.name || nil
+  end
+
+  gmail_label_types.each do |label|
+	  module_eval <<-EOL
+	    def #{label.to_s.downcase} &block
+		  in_label(#{label.to_s.downcase}_label, &block)
+		end
+		def #{label.to_s.downcase}_label
+          label_of_type(#{label.inspect})
+		end
+	  EOL
   end
 
   # gmail.label(name)
   def label(name)
-    mailboxes[name] ||= Mailbox.new(self, mailbox)
+    mailboxes[name] ||= Mailbox.new(self, name)
   end
   alias :mailbox :label
 
-  ###########################
-  #  MAKING EMAILS
-  # 
+  # @group Making/Sending Emails
+  
+  #  Generate and return message
+  #
   #  gmail.generate_message do
   #    ...inside Mail context...
   #  end
@@ -65,7 +139,9 @@ class Gmail
   # 
   #  mail = Mail.new...
   #  gmail.deliver!(mail)
-  ###########################
+  #
+  # @yield [Mail] Mail object
+  # @return [Mail] Created mail object
   def generate_message(&block)
     require 'net/smtp'
     require 'smtp_tls'
@@ -75,6 +151,10 @@ class Gmail
     mail
   end
 
+  # Generate message and delivery using gmail smtp
+  #
+  # @yield [Mail] Mail object
+  # @param mail [optional, Mail] Message as a Mail object
   def deliver(mail=nil, &block)
     require 'net/smtp'
     require 'smtp_tls'
@@ -84,17 +164,23 @@ class Gmail
     mail.from = meta.username unless mail.from
     mail.deliver!
   end
+  # @endgroup
+
+  # @group Login related functions
   
-  ###########################
-  #  LOGIN
-  ###########################
+  # Login as specified user
   def login
     res = @imap.login(meta.username, meta.password)
     @logged_in = true if res.name == 'OK'
   end
+
+  # Check whether imap connection has logged in yet.
+  #
+  # @return [Boolean] Is logged in?
   def logged_in?
     !!@logged_in
   end
+
   # Log out of gmail
   def logout
     if logged_in?
@@ -103,6 +189,18 @@ class Gmail
     end
   end
 
+  # @endgroup
+
+  # @overload in_mailbox(mailbox, &block)
+  #   Selects specified mailbox, yields it to block and then returns to previous mailbox 
+  #   when block exits
+  #   @yield [Gmail::Mailbox] Current mailbox
+  #   @return Result of block
+  #
+  # @overload in_mailbox(mailbox)
+  #   Returns Mailbox object coresponding to name
+  #   @return [Gmail::Mailbox]
+  #
   def in_mailbox(mailbox, &block)
     if block_given?
       mailbox_stack << mailbox
@@ -119,19 +217,19 @@ class Gmail
       end
       return value
     else
-      mailboxes[name] ||= Mailbox.new(self, mailbox)
+      mailboxes[mailbox] ||= Mailbox.new(self, mailbox)
     end
   end
   alias :in_label :in_mailbox
 
-  ###########################
-  #  Other...
-  ###########################
+  # Describe object
   def inspect
     "#<Gmail:#{'0x%x' % (object_id << 1)} (#{meta.username}) #{'dis' if !logged_in?}connected>"
   end
   
   # Accessor for @imap, but ensures that it's logged in first.
+  # Internal use only.
+  #
   def imap
     unless logged_in?
       login
@@ -166,3 +264,5 @@ end
 
 require 'gmail/mailbox'
 require 'gmail/message'
+require 'gmail/messagelist'
+
