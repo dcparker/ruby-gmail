@@ -88,7 +88,9 @@ class Gmail
     # Parsed MIME message object
     def message
       require 'mail'
-      _body = @gmail.in_mailbox(@mailbox) { @gmail.imap.uid_fetch(uid, "RFC822")[0].attr["RFC822"] }
+      request,part = 'RFC822','RFC822'
+      request,part = 'BODY.PEEK[]','BODY[]' if @gmail.peek
+      _body = @gmail.in_mailbox(@mailbox) { @gmail.imap.uid_fetch(uid, request)[0].attr[part] }
       @message ||= Mail.new(_body)
     end
 

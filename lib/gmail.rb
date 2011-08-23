@@ -50,9 +50,12 @@ class Gmail
 
   # gmail.label(name)
   def label(name)
-    mailboxes[name] ||= Mailbox.new(self, mailbox)
+    mailboxes[name] ||= Mailbox.new(self, name)
   end
   alias :mailbox :label
+
+  # don't mark emails as read on the server when downloading them
+  attr_accessor :peek
 
   ###########################
   #  MAKING EMAILS
