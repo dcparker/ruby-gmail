@@ -105,6 +105,12 @@ class Gmail
       @logged_in = false if res.name == 'OK'
     end
   end
+  
+  # Shutdown socket and disconnect
+  def disconnect
+    logout if logged_in?
+    @imap.disconnect unless @imap.disconnected?
+  end  
 
   def in_mailbox(mailbox, &block)
     if block_given?
