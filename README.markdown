@@ -1,9 +1,6 @@
 # Notice
-I am looking for for a new project owner for this project.  Please contact me if you are interested in maintaining this 
-project or being added as a contributor.  
 
-Sincerely,  
-[Joshavne Potter](mailto:yourtech@gmail.com?subject=ruby-gmail%20gem%20support)
+This gem needs to get back on track. I am looking for people to help go through issues and fix bugs. I want to push a solid, stable release first, then look at charting out the future of the gem.
 
 # ruby-gmail
 
