@@ -1,6 +1,6 @@
 # Notice
 
-This gem needs to get back on track. I am looking for people to help go through issues and fix bugs. I want to push a solid, stable release first, then look at charting out the future of the gem.
+This gem needs to get back on track. I am looking for people to help go through issues and fix bugs. I want to push a solid, stable release first, then look at charting out the future of the gem. Please email me at <myobie@gmail.com> if you want to help or just get started on the issues.
 
 # ruby-gmail
 
