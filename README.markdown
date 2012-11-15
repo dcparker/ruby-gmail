@@ -1,6 +1,8 @@
 # Notice
 
-This gem needs to get back on track. I am looking for people to help go through issues and fix bugs. I want to push a solid, stable release first, then look at charting out the future of the gem. Please email me at <myobie@gmail.com> if you want to help or just get started on the issues.
+First, the gem on rubygems.org is out of date. I am trying to gain ownership over that gem, but it is proving difficult - I may have to rename the gem.
+
+Second, this gem needs to get back on track. I am looking for people to help go through issues and fix bugs. I want to push a solid, stable release first, then look at charting out the future of the gem. Please email me at <myobie@gmail.com> if you want to help or just get started on the issues.
 
 # ruby-gmail
 
