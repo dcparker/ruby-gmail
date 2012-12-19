@@ -105,14 +105,6 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
       end
     end
 
-    # Save just the first attachment from the newest unread email (assuming pdf)
-    # For #save_to_file:
-    #   + provide a path - save to attachment filename in path
-    #   + provide a filename - save to file specified
-    #   + provide no arguments - save to attachment filename in current directory
-    email = gmail.inbox.emails(:unread).first
-    email.attachments[0].save_to_file("/path/to/location")
-
     # Add a label to a message
     email.label("Faxes")
 
