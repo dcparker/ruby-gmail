@@ -122,6 +122,7 @@ Creating emails now uses the amazing [Mail](http://rubygems.org/gems/mail) rubyg
         body "Text of plaintext message."
       end
       html_part do
+        content_type 'text/html; charset=UTF-8'
         body "<p>Text of <em>html</em> message.</p>"
       end
       add_file "/path/to/some_image.jpg"
