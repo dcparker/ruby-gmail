@@ -82,8 +82,6 @@ class Gmail
       move_to('[Gmail]/All Mail')
     end
 
-    private
-
     # Parsed MIME message object
     def message
       require 'mail'
@@ -93,6 +91,8 @@ class Gmail
       @message ||= Mail.new(_body)
     end
 
+    private
+    
     # Delegate all other methods to the Mail message
     def method_missing(*args, &block)
       if block_given?
