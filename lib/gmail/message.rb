@@ -38,7 +38,7 @@ class Gmail
       when :deleted
         flag(:Deleted)
       when :spam
-        move_to('[Gmail]/Spam')
+        move_to_special_folder(:Junk)
       end ? true : false
     end
 
@@ -78,8 +78,13 @@ class Gmail
       label(name) && delete!
     end
 
+    def move_to_special_folder(attribute)
+      name = @gmail.find_label_by_attribute(attribute).name
+      move_to(name)
+    end
+
     def archive!
-      move_to('[Gmail]/All Mail')
+      move_to_special_folder(:All)
     end
 
     # Parsed MIME message object
