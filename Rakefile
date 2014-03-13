@@ -21,3 +21,7 @@ begin
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
+
+task :default do
+  sh "find test -type f -name '*rb' -exec testrb -I lib:test {} +"
+end

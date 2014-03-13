@@ -42,9 +42,13 @@ class Gmail
     imap.create(name)
   end
 
+  def mailbox_list
+    imap.list("","*")
+  end
+
   # List the available labels
   def labels
-    (imap.list("", "%") + imap.list("[Gmail]/", "%")).inject([]) { |labels,label|
+    mailbox_list.inject([]) { |labels,label|
       label[:name].each_line { |l| labels << l }; labels }
   end
 
@@ -53,6 +57,10 @@ class Gmail
     mailboxes[name] ||= Mailbox.new(self, name)
   end
   alias :mailbox :label
+
+  def find_label_by_attribute(attribute)
+    mailbox_list.find{ |label| label.attr.include?(attribute.to_sym.capitalize) }
+  end
 
   # don't mark emails as read on the server when downloading them
   attr_accessor :peek
