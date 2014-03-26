@@ -56,8 +56,11 @@ class Gmail
 
   # List the available labels
   def labels
-    mailbox_list.inject([]) { |labels,label|
-      label[:name].each_line { |l| labels << l }; labels }
+    mailbox_list.inject([]) do |labels,label|
+      labels << label[:name] unless label.attr.include?(:Noselect)
+
+      labels
+    end
   end
 
   # gmail.label(name)
