@@ -1,18 +1,18 @@
 # Notice
 
-First, I have pushed verion 0.3.0 to rubygems.org (Yay, thanks Nick Quaranto for the help) which is a build straight from master.
+I have pushed verion 0.3.1 to rubygems.org (Yay, thanks Nick Quaranto for the help) which is a build straight from master.
 
-Second, this gem needs to get back on track. I am looking for people to help go through issues and fix bugs. I want to push a solid, stable release first, then look at charting out the future of the gem. Please email me at <myobie@gmail.com> if you want to help or just get started on the issues.
+Second, this gem is getting back on track. See [this issue here](https://github.com/dcparker/ruby-gmail/issues/58) for more information.
 
 # ruby-gmail
 
-* Homepage: [http://dcparker.github.com/ruby-gmail/](http://dcparker.github.com/ruby-gmail/)
 * Code: [http://github.com/dcparker/ruby-gmail](http://github.com/dcparker/ruby-gmail)
-* Gem: [http://gemcutter.org/gems/ruby-gmail](http://gemcutter.org/gems/ruby-gmail)
+* Gem: [http://gemcutter.org/gems/ruby-gmail](http://rubygems.org/gems/ruby-gmail)
 
 ## Author(s)
 
 * Daniel Parker of BehindLogic.com
+* Nathan Herald
 
 Extra thanks for specific feature contributions from:
 
