@@ -38,6 +38,14 @@ class Gmail
     in_label('inbox')
   end
 
+  def destroy_label(name)
+    imap.delete(name)
+  end
+
+  def rename_label(oldname, newname)
+    imap.rename(oldname, newname)
+  end
+
   def create_label(name)
     imap.create(name)
   end
@@ -48,8 +56,11 @@ class Gmail
 
   # List the available labels
   def labels
-    mailbox_list.inject([]) { |labels,label|
-      label[:name].each_line { |l| labels << l }; labels }
+    mailbox_list.inject([]) do |labels,label|
+      labels << label[:name] unless label.attr.include?(:Noselect)
+
+      labels
+    end
   end
 
   # gmail.label(name)
@@ -67,13 +78,13 @@ class Gmail
 
   ###########################
   #  MAKING EMAILS
-  # 
+  #
   #  gmail.generate_message do
   #    ...inside Mail context...
   #  end
-  # 
+  #
   #  gmail.deliver do ... end
-  # 
+  #
   #  mail = Mail.new...
   #  gmail.deliver!(mail)
   ###########################
@@ -113,12 +124,12 @@ class Gmail
       @logged_in = false if res && res.name == 'OK'
     end
   end
-  
+
   # Shutdown socket and disconnect
   def disconnect
     logout if logged_in?
     @imap.disconnect unless @imap.disconnected?
-  end  
+  end
 
   def in_mailbox(mailbox, &block)
     if block_given?
@@ -147,7 +158,7 @@ class Gmail
   def inspect
     "#<Gmail:#{'0x%x' % (object_id << 1)} (#{meta.username}) #{'dis' if !logged_in?}connected>"
   end
-  
+
   # Accessor for @imap, but ensures that it's logged in first.
   def imap
     unless logged_in?
