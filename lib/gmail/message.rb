@@ -78,7 +78,7 @@ class Gmail
       label(name) && delete!
     end
 
-    def move_to(name)
+    def move_to!(name)
       label!(name) && delete!
     end
 
