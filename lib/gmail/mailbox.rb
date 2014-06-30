@@ -50,6 +50,7 @@ class Gmail
         search.concat ['ON', opts[:on].to_imap_date] if opts[:on]
         search.concat ['FROM', opts[:from]] if opts[:from]
         search.concat ['TO', opts[:to]] if opts[:to]
+        search.concat ['SUBJECT', opts[:subject]] if opts[:subject]
       end
 
       # puts "Gathering #{(aliases[key] || key).inspect} messages for mailbox '#{name}'..."
