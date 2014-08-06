@@ -51,6 +51,12 @@ class Gmail
         search.concat ['FROM', opts[:from]] if opts[:from]
         search.concat ['TO', opts[:to]] if opts[:to]
         search.concat ['SUBJECT', opts[:subject]] if opts[:subject]
+
+        # Gmail offers us to search the same way we do on the web interface
+        # https://developers.google.com/gmail/imap_extensions
+        # example: gmail.emails(gm: 'has:attachment in:unread "who is john galt"')
+        # 
+        search.concat ['X-GM-RAW', opts[:gm]] if opts[:gm]
       end
 
       # puts "Gathering #{(aliases[key] || key).inspect} messages for mailbox '#{name}'..."
