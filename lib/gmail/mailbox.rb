@@ -43,6 +43,13 @@ class Gmail
         raise ArgumentError, "Couldn't make sense of arguments to #emails - should be an optional hash of options preceded by an optional read-status bit; OR simply an array of parameters to pass directly to the IMAP uid_search call."
       end
       if !opts.empty?
+
+        if opts[:after] === opts[:before]
+          opts[:on]     = opts[:before]
+          opts[:after]  = nil
+          opts[:before] = nil
+        end
+        
         # Support for several search macros
         # :before => Date, :on => Date, :since => Date, :from => String, :to => String
         search.concat ['SINCE', opts[:after].to_imap_date] if opts[:after]
