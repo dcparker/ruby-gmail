@@ -144,7 +144,7 @@ Creating emails now uses the amazing [Mail](http://rubygems.org/gems/mail) rubyg
 * ruby
 * net/smtp
 * net/imap
-* tmail
+* mail
 * shared-mime-info rubygem (for MIME-detection when attaching files)
 
 ## Install
