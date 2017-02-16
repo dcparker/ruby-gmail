@@ -78,6 +78,10 @@ class Gmail
       label(name) && delete!
     end
 
+    def move_to!(name)
+      label!(name) && delete!
+    end
+
     def move_to_special_folder(attribute)
       name = @gmail.find_label_by_attribute(attribute).name
       move_to(name)
