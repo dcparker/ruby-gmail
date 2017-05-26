@@ -80,6 +80,13 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
     # Remember that every message in a conversation/thread will come as a separate message.
     gmail.inbox.emails(:unread, :before => Date.parse("2010-04-20"), :from => "myboss@gmail.com")
 
+    # Search the same way you do on Gmail's web interface:
+    gmail.inbox.emails(gm: 'before:2010-02-20 after:2010-03-20')
+    gmail.inbox.emails(gm: 'on:2010-04-15')
+    gmail.inbox.emails(gm: 'from:myfriend@gmail.com')
+    gmail.inbox.emails(gm: 'to:myfriend@gmail.com')
+    gmail.inbox.emails(gm: 'is:read from:myboss@gmail.com "you are a great employee"')
+
     # Get messages without marking them as read on the server.
     gmail.peek = true
     gmail.inbox.emails(:unread, :before => Date.parse("2010-04-20"), :from => "myboss@gmail.com")
