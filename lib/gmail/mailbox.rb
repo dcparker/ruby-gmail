@@ -2,7 +2,7 @@ require 'date'
 require 'time'
 class Object
   def to_imap_date
-    Date.parse(to_s).strftime("%d-%B-%Y")
+    Date.parse(to_s).strftime("%d-%b-%Y")
   end
 end
 
