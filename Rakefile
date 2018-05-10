@@ -11,7 +11,7 @@ begin
     gem.email = "gems@behindlogic.com"
     gem.homepage = "http://dcparker.github.com/ruby-gmail"
     gem.authors = ["BehindLogic"]
-    gem.post_install_message = "\n\033[34mIf ruby-gmail saves you TWO hours of work, want to compensate me for, like, a half-hour?\nSupport me in making new and better gems:\033[0m \033[31;4mhttp://pledgie.com/campaigns/7087\033[0m\n\n"
+    gem.post_install_message = "Thanks for downloading ruby-gmail :)"
     gem.add_dependency('shared-mime-info', '>= 0')
     gem.add_dependency('mail', '>= 2.2.1')
     gem.add_dependency('mime', '>= 0.1')
