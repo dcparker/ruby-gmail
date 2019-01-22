@@ -1,5 +1,6 @@
 require "openssl"
 require "net/smtp"
+require "timeout"
 
 Net::SMTP.class_eval do
   
@@ -36,7 +37,7 @@ Net::SMTP.class_eval do
       check_auth_args(user, secret) if user or secret
     end
 
-    sock = timeout(@open_timeout) { TCPSocket.open(@address, @port) }
+    sock = Timeout.timeout(@open_timeout) { TCPSocket.open(@address, @port) }
     @socket = Net::InternetMessageIO.new(sock)
     @socket.read_timeout = 60 #@read_timeout
     @socket.debug_output = STDERR #@debug_output
