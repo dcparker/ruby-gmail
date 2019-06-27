@@ -42,109 +42,144 @@ A Rubyesque interface to Gmail, with all the tools you'll need. Search, read and
 ## Example Code:
 
 ### 1) Require gmail
-
-    require 'gmail'
+```ruby
+require 'gmail'
+```
     
 ### 2) Start an authenticated gmail session
+```ruby
+# If you pass a block, the session will be passed into the block,
+# and the session will be logged out after the block is executed.
+gmail = Gmail.new(username, password)
+# ...do things...
+gmail.logout
+```
 
-    #    If you pass a block, the session will be passed into the block,
-    #    and the session will be logged out after the block is executed.
-    gmail = Gmail.new(username, password)
-    # ...do things...
-    gmail.logout
-
-    Gmail.new(username, password) do |gmail|
-      # ...do things...
-    end
+```ruby
+Gmail.new(username, password) do |gmail|
+  # ...do things...
+end
+```
 
 ### 3) Count and gather emails!
-    
-    # Get counts for messages in the inbox
-    gmail.inbox.count
-    gmail.inbox.count(:unread)
-    gmail.inbox.count(:read)
+```ruby
+# Get counts for messages in the inbox
+gmail.inbox.count
+gmail.inbox.count(:unread)
+gmail.inbox.count(:read)
+```
 
-    # Count with some criteria
-    gmail.inbox.count(:after => Date.parse("2010-02-20"), :before => Date.parse("2010-03-20"))
-    gmail.inbox.count(:on => Date.parse("2010-04-15"))
-    gmail.inbox.count(:from => "myfriend@gmail.com")
-    gmail.inbox.count(:to => "directlytome@gmail.com")
+```ruby
+# Count with some criteria
+gmail.inbox.count(after: Date.parse('2010-02-20'), before: Date.parse('2010-03-20'))
+gmail.inbox.count(on: Date.parse('2010-04-15'))
+gmail.inbox.count(from: 'myfriend@gmail.com')
+gmail.inbox.count(to: 'directlytome@gmail.com')
+```
 
-    # Combine flags and options
-    gmail.inbox.count(:unread, :from => "myboss@gmail.com")
-    
-    # Labels work the same way as inbox
-    gmail.mailbox('Urgent').count
-    
-    # Getting messages works the same way as counting: optional flag, and optional arguments
-    # Remember that every message in a conversation/thread will come as a separate message.
-    gmail.inbox.emails(:unread, :before => Date.parse("2010-04-20"), :from => "myboss@gmail.com")
+```ruby
+# Combine flags and options
+gmail.inbox.count(:unread, from: 'myboss@gmail.com')
+```
 
-    # Search the same way you do on Gmail's web interface:
-    gmail.inbox.emails(gm: 'before:2010-02-20 after:2010-03-20')
-    gmail.inbox.emails(gm: 'on:2010-04-15')
-    gmail.inbox.emails(gm: 'from:myfriend@gmail.com')
-    gmail.inbox.emails(gm: 'to:myfriend@gmail.com')
-    gmail.inbox.emails(gm: 'is:read from:myboss@gmail.com "you are a great employee"')
+```ruby
+# Labels work the same way as inbox
+gmail.mailbox('Urgent').count
+```
 
-    # Get messages without marking them as read on the server.
-    gmail.peek = true
-    gmail.inbox.emails(:unread, :before => Date.parse("2010-04-20"), :from => "myboss@gmail.com")
-    
+```ruby
+# Getting messages works the same way as counting: optional flag, and optional arguments
+# Remember that every message in a conversation/thread will come as a separate message.
+gmail.inbox.emails(:unread, before: Date.parse('2010-04-20'), from: 'myboss@gmail.com')
+```
+
+```ruby
+# Search the same way you do on Gmail's web interface:
+gmail.inbox.emails(gm: 'before:2010-02-20 after:2010-03-20')
+gmail.inbox.emails(gm: 'on:2010-04-15')
+gmail.inbox.emails(gm: 'from:myfriend@gmail.com')
+gmail.inbox.emails(gm: 'to:myfriend@gmail.com')
+gmail.inbox.emails(gm: 'is:read from:myboss@gmail.com "you are a great employee"')
+```
+
+```ruby
+# Get messages without marking them as read on the server.
+gmail.peek = true
+gmail.inbox.emails(:unread, before: Date.parse('2010-04-20'), from: 'myboss@gmail.com')
+```
+
 ### 4) Work with emails!
+```ruby
+# any news older than 4-20, mark as read and archive it...
+gmail.inbox.emails(before: Date.parse('2010-04-20'), from: 'news@nbcnews.com').each do |email|
+  email.mark(:read) # can also mark :unread or :spam
+  email.archive!
+end
+```
 
-    # any news older than 4-20, mark as read and archive it...
-    gmail.inbox.emails(:before => Date.parse("2010-04-20"), :from => "news@nbcnews.com").each do |email|
-      email.mark(:read) # can also mark :unread or :spam
-      email.archive!
-    end
+```ruby
+# delete emails from X...
+gmail.inbox.emails(from: 'x-fiancé@gmail.com').each do |email|
+  email.delete!
+end
+```
 
-    # delete emails from X...
-    gmail.inbox.emails(:from => "x-fiancé@gmail.com").each do |email|
-      email.delete!
-    end
+```ruby
+# Save all attachments in the "Faxes" label to a folder
+folder = '/where/ever'
 
-    # Save all attachments in the "Faxes" label to a folder
-    folder = "/where/ever"
-    gmail.mailbox("Faxes").emails.each do |email|
-      email.attachments.each do |attachment|
-        file = File.new(folder + attachment.filename, "w+")
-        file << attachment.decoded
-        file.close
-      end
-    end
+gmail.mailbox('Faxes').emails.each do |email|
+  email.attachments.each do |attachment|
+    file = File.new(File.join(folder, attachment.filename), 'w+')
+    file << attachment.decoded
+    file.close
+  end
+end
+```
 
-    # Add a label to a message
-    email.label("Faxes")
+```ruby
+# Add a label to a message
+email.label('Faxes')
+```
 
-    # Or "move" the message to a label
-    email.move_to("Faxes")
+```ruby
+# Or "move" the message to a label
+email.move_to('Faxes')
+```
 
 ### 5) Create new emails!
 
 Creating emails now uses the amazing [Mail](http://rubygems.org/gems/mail) rubygem. See its [documentation here](http://github.com/mikel/mail). Ruby-gmail will automatically configure your Mail emails to be sent via your Gmail account's SMTP, so they will be in your Gmail's "Sent" folder. Also, no need to specify the "From" email either, because ruby-gmail will set it for you.
 
-    gmail.deliver do
-      to "email@example.com"
-      subject "Having fun in Puerto Rico!"
-      text_part do
-        body "Text of plaintext message."
-      end
-      html_part do
-        content_type 'text/html; charset=UTF-8'
-        body "<p>Text of <em>html</em> message.</p>"
-      end
-      add_file "/path/to/some_image.jpg"
-    end
-    # Or, generate the message first and send it later
-    email = gmail.generate_message do
-      to "email@example.com"
-      subject "Having fun in Puerto Rico!"
-      body "Spent the day on the road..."
-    end
-    email.deliver!
-    # Or...
-    gmail.deliver(email)
+```ruby
+gmail.deliver do
+
+  to      'email@example.com'
+  subject 'Having fun in Puerto Rico!'
+  
+  text_part do
+    body 'Text of plaintext message.'
+  end
+
+  html_part do
+    content_type 'text/html; charset=UTF-8'
+    body         '<p>Text of <em>html</em> message.</p>'
+  end
+
+  add_file '/path/to/some_image.jpg'
+end
+
+# Or, generate the message first and send it later
+email = gmail.generate_message do
+  to      'email@example.com'
+  subject 'Having fun in Puerto Rico!'
+  body    'Spent the day on the road...'
+end
+
+email.deliver!
+# Or...
+gmail.deliver(email)
+```
 
 ## Requirements
 
@@ -155,8 +190,9 @@ Creating emails now uses the amazing [Mail](http://rubygems.org/gems/mail) rubyg
 * shared-mime-info rubygem (for MIME-detection when attaching files)
 
 ## Install
-
-    gem install ruby-gmail
+```
+gem install ruby-gmail
+```
 
 ## License
 
