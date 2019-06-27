@@ -130,7 +130,7 @@ folder = '/where/ever'
 
 gmail.mailbox('Faxes').emails.each do |email|
   email.attachments.each do |attachment|
-    file = File.new(folder + attachment.filename, "w+")
+    file = File.new(File.join(folder, attachment.filename), 'w+')
     file << attachment.decoded
     file.close
   end
